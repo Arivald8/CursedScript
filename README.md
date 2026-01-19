@@ -1,9 +1,11 @@
 # CursedScript
 ## Curses-Powered Engine for Terminal Based Games
 #### !README will be updated as the project progresses!
-At the moment, including only a tkinter based editor, and a basic directory strucure. This will be used to configure a game of your choice/making.
+At the moment, including only a tkinter based editor, and a basic directory structure. This will be used to configure a game of your choice/making.
 
 main.py is currently the configurator/editor.
+
+Dependencies so far: windows-curses, pytest
 
 ## Current Directory Structure
 
