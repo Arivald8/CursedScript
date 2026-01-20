@@ -47,7 +47,7 @@ class MapEditor(tk.Frame):
         self.map_data = []          # 2D array of chars
         self.entity_data = {}       # Dict: {(x,y): EntityDict}
         
-        # Temp for refactor
+        # Used in tool manager classes 
         self.toolbar = tk.Frame(self, width=250, bg="#e0e0e0", relief=tk.RAISED, bd=1)
         self.notebook = ttk.Notebook(self.toolbar)
         self.tool_var = tk.StringVar(value="brush")
@@ -110,9 +110,14 @@ class MapEditor(tk.Frame):
         scroll_t.pack(side="right", fill="y")
 
         for t in TERRAIN_TYPES:
-            b = tk.Button(scroll_frame_t, text=f"{t['symbol']} {t['name']}", 
-                          bg=t['color'], fg=t['fg'], anchor="w",
-                          command=lambda x=t: self.select_terrain(x))
+            b = tk.Button(
+                scroll_frame_t, 
+                text=f"{t['symbol']} {t['name']}", 
+                bg=t['color'], fg=t['fg'], 
+                anchor="w",
+                command=lambda x=t: self.select_terrain(x)
+            )
+
             b.pack(fill=tk.X, pady=1)
 
         # Tab 2: Entities
@@ -120,9 +125,14 @@ class MapEditor(tk.Frame):
         self.notebook.add(page_entities, text='Entities')
         
         for e in ENTITY_TYPES:
-            b = tk.Button(page_entities, text=f"{e['name']}", 
-                          bg=e['color'], fg="black", anchor="w",
-                          command=lambda x=e: self.select_entity(x))
+            b = tk.Button(
+                page_entities, 
+                text=f"{e['name']}", 
+                bg=e['color'], fg="black", 
+                anchor="w",
+                command=lambda x=e: self.select_entity(x)
+            )
+            
             b.pack(fill=tk.X, pady=1)
 
         # Right: Canvas
