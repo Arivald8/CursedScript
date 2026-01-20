@@ -1,17 +1,18 @@
 # CursedScript
 ## Curses-Powered Engine for Terminal Based Games
 #### !README will be updated as the project progresses!
-At the moment, including only a tkinter based editor, and a basic directory structure. This will be used to configure a game of your choice/making.
 
-main.py is currently the configurator/editor.
+Will allow easy creation of terminal based games.
 
-Dependencies so far: windows-curses, pytest
+* Dependencies: 
+    * windows-curses 
+    * pytest
+    * pytest-mock
 
-### Change Log:
-* Added editor.py
-* MapEditorView inherits directly from ttk.Frame so MapEditor(self) is simply instantiated. This lets the map editor take over the entire right-hand pane of the app.
+### Current State:
+* Map Editor: Fully working (Create new, paint entities, objects, save, load map.)
 
-## Current Directory Structure
+## Directory Structure
 
 ```
 CursedScript/

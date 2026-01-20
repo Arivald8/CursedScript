@@ -1,13 +1,14 @@
 from collections import deque
+from typing import TYPE_CHECKING
+from .cfg import CFG
+
+if TYPE_CHECKING:
+    from .editor import MapEditor
 
 class Paint:
-    def __init__(self, editor_instance, cell_size):
-        """
-        :param editor_instance: Reference to the main MapEditor class
-        :param cell_size: Int
-        """
+    def __init__(self, editor_instance: 'MapEditor', canvas_instance):
         self.editor = editor_instance
-        self.cell_size = cell_size
+        self.canvas = canvas_instance
         
     def paint_terrain(self, x, y):
         current_char = self.editor.current_terrain['char']
@@ -47,8 +48,8 @@ class Paint:
 
     def update_cell_visual(self, x, y, tile):
         rect, txt = self.editor.cell_ids[y][x]
-        self.editor.canvas.itemconfig(rect, fill=tile['color'])
-        self.editor.canvas.itemconfig(txt, text=tile['symbol'], fill=tile['fg'])
+        self.canvas.itemconfig(rect, fill=tile['color'])
+        self.canvas.itemconfig(txt, text=tile['symbol'], fill=tile['fg'])
 
     def paint_entity(self, x, y):
         # Remove existing at this tile
@@ -59,13 +60,12 @@ class Paint:
         self.draw_entity_visual(x, y, self.editor.current_entity)
 
     def draw_entity_visual(self, x, y, entity_def):
-        cs = self.cell_size
+        cs = CFG.CELL_SIZE
         x1, y1 = x * cs + 2, y * cs + 2
         x2, y2 = x * cs + cs - 2, y * cs + cs - 2
         
         if entity_def['shape'] == 'star':
-             # Simple circle for start to distinguish
-             eid = self.editor.canvas.create_oval(
+             eid = self.canvas.create_oval(
                 x1, 
                 y1, 
                 x2, 
@@ -76,10 +76,9 @@ class Paint:
             )
              
         elif entity_def['shape'] == 'diamond':
-            # Diamond polygon
             cx, cy = x * cs + cs/2, y * cs + cs/2
             offset = cs/2 - 2
-            eid = self.editor.canvas.create_polygon(
+            eid = self.canvas.create_polygon(
                 cx, 
                 cy-offset, 
                 cx+offset, 
@@ -93,7 +92,7 @@ class Paint:
             )
 
         else:
-            eid = self.editor.canvas.create_oval(
+            eid = self.canvas.create_oval(
                 x1, 
                 y1, 
                 x2, 
@@ -108,5 +107,5 @@ class Paint:
         if (x, y) in self.editor.entity_data:
             del self.editor.entity_data[(x, y)]
             if (x, y) in self.editor.entity_ids:
-                self.editor.canvas.delete(self.editor.entity_ids[(x, y)])
+                self.canvas.delete(self.editor.entity_ids[(x, y)])
                 del self.editor.entity_ids[(x, y)]

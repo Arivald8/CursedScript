@@ -1,17 +1,18 @@
 from tkinter import filedialog, messagebox
 import json
 import os
+from .cfg import CFG
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from .editor import MapEditor
+    from .mapper import Mapper
 
 class FileIO:
-    def __init__(self, editor_instance, terrain_types, entity_types):
-        """
-        :param editor_instance: Reference to the main MapEditor class
-        :param terrain_types: List of dictionary definitions for terrain
-        :param entity_types: List of dictionary definitions for entities
-        """
+    def __init__(self, editor_instance: 'MapEditor', mapper_instance: 'Mapper'):
         self.editor = editor_instance
-        self.terrain_types = terrain_types
-        self.entity_types = entity_types
+        self.mapper = mapper_instance
+
 
     def save_map(self):
             filename = filedialog.asksaveasfilename(
@@ -20,7 +21,8 @@ class FileIO:
                 filetypes=[("Map File", "*.txt")]
             )
 
-            if not filename: return
+            if not filename: 
+                return
             
             # Saving terrain (.txt)
             try:
@@ -58,7 +60,8 @@ class FileIO:
             filetypes=[("Map File", "*.txt")]
         )
 
-        if not filename: return
+        if not filename: 
+            return
         
         try:
             # Load terrain
@@ -81,7 +84,7 @@ class FileIO:
                     loaded_entities = json.load(f)
                 
                 # Rebuild entity dict
-                entity_lookup = {e['id']: e for e in self.entity_types}
+                entity_lookup = {e['id']: e for e in CFG.ENTITY_TYPES}
                 
                 for item in loaded_entities:
                     x, y = item['x'], item['y']
@@ -89,7 +92,7 @@ class FileIO:
                     if e_id in entity_lookup:
                         self.editor.entity_data[(x, y)] = entity_lookup[e_id]
             
-            self.editor.draw_grid()
+            self.mapper.draw_grid()
 
             messagebox.showinfo(
                 "Loaded", 
