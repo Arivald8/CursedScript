@@ -1,9 +1,24 @@
+import json
+import os
+import sys
+
 class CFG:
-    # CONF
+    # Fallbacks in case config.json is missing
     DEFAULT_WIDTH = 60
     DEFAULT_HEIGHT = 40
     CELL_SIZE = 20  
     FONT_SIZE = 10
+
+    # Default Terrain Fallback
+    TERRAIN_TYPES = [
+        {'char': '.', 'color': '#32CD32', 'fg': '#006400', 'name': 'Grass', 'symbol': '·'},
+        {'char': ' ', 'color': '#000000', 'fg': '#000000', 'name': 'Void',  'symbol': ''},
+    ]
+
+     # Default Entity Fallback
+    ENTITY_TYPES = [
+        {'type': 'player', 'id': 'player_start', 'name': 'Player Start', 'color': '#FFFFFF', 'shape': 'star'},
+    ]
 
     # Helpers to find data by keys
     @staticmethod
@@ -13,26 +28,44 @@ class CFG:
                 return t
         return CFG.TERRAIN_TYPES[0]
 
-    TERRAIN_TYPES = [
-        {'char': '.', 'color': '#32CD32', 'fg': '#006400', 'name': 'Grass',     'symbol': '·'},
-        {'char': 'T', 'color': '#228B22', 'fg': '#000000', 'name': 'Tree',      'symbol': '♠'},
-        {'char': '~', 'color': '#1E90FF', 'fg': '#E0FFFF', 'name': 'Water',     'symbol': '≈'},
-        {'char': '#', 'color': '#DAA520', 'fg': '#8B4513', 'name': 'Road',      'symbol': '░'},
-        {'char': ':', 'color': '#F0E68C', 'fg': '#BDB76B', 'name': 'Sand',      'symbol': '░'},
-        {'char': '^', 'color': '#D3D3D3', 'fg': '#000000', 'name': 'Mountain',  'symbol': '▲'},
-        {'char': 'x', 'color': '#696969', 'fg': '#D3D3D3', 'name': 'Wall',      'symbol': '▒'},
-        {'char': 'M', 'color': '#2F4F4F', 'fg': '#708090', 'name': 'Cave/Rock', 'symbol': '█'},
-        {'char': 'O', 'color': '#8B0000', 'fg': '#FFFFFF', 'name': 'Building',  'symbol': '⌂'},
-        {'char': '+', 'color': '#4682B4', 'fg': '#FFD700', 'name': 'Bridge',    'symbol': '≡'},
-        {'char': ' ', 'color': '#000000', 'fg': '#000000', 'name': 'Void',      'symbol': ''},
-    ]
 
-    # (Saved to JSON)
-    ENTITY_TYPES = [
-        {'type': 'player',   'id': 'player_start', 'name': 'Player Start', 'color': '#FFFFFF', 'shape': 'star'},
-        {'type': 'creature', 'id': 'Ogre',         'name': 'Ogre',         'color': '#FF0000', 'shape': 'oval'},
-        {'type': 'creature', 'id': 'Goblin',       'name': 'Goblin',       'color': '#FF69B4', 'shape': 'oval'},
-        {'type': 'item',     'id': 'Sword',        'name': 'Sword',        'color': '#00FFFF', 'shape': 'diamond'},
-        {'type': 'item',     'id': 'Potion',       'name': 'Health Pot',   'color': '#00FF00', 'shape': 'diamond'},
-        {'type': 'item',     'id': 'Shield',       'name': 'Shield',       'color': '#FFA500', 'shape': 'diamond'},
-    ]
+    @classmethod
+    def load_config(cls, filename="config.json"):
+        """
+        Loads configuration from an external JSON file.
+        Uses absolute paths to ensure it works regardless of where the script runs.
+        """
+        # Determine the directory of THIS file
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+        config_path = os.path.join(base_dir, filename)
+
+        if not os.path.exists(config_path):
+            print(f"[WARNING] Config file not found at {config_path}. Using internal defaults.")
+            return
+
+        try:
+            with open(config_path, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+            
+            # Updating settings
+            settings = data.get("settings", {})
+            cls.DEFAULT_WIDTH = settings.get("default_width", cls.DEFAULT_WIDTH)
+            cls.DEFAULT_HEIGHT = settings.get("default_height", cls.DEFAULT_HEIGHT)
+            cls.CELL_SIZE = settings.get("cell_size", cls.CELL_SIZE)
+            cls.FONT_SIZE = settings.get("font_size", cls.FONT_SIZE)
+
+            # Updating terrain (if present and valid)
+            if "terrain" in data and isinstance(data["terrain"], list):
+                cls.TERRAIN_TYPES = data["terrain"]
+
+            # Updating entities (if present and valid)
+            if "entities" in data and isinstance(data["entities"], list):
+                cls.ENTITY_TYPES = data["entities"]
+                
+            print(f"[INFO] Configuration loaded from {config_path}")
+
+        except Exception as e:
+            print(f"[ERROR] Failed to parse config.json: {e}")
+            print("Reverting to internal defaults.")
+
+CFG.load_config()
