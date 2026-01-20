@@ -59,11 +59,11 @@ Note that `app.mainloop()` is never used. It creates an infinite loop that waits
     * Using test_page_layout_content, we crawl the Tkinter widget tree with winfo_children(). To check: Go to Map Editor obj, list its children, filter for LabelFrames, check if there are x entries, and check if the first one says "Tile System". If `.pack()` or `.grid()` was missed, this will catch it. 
 
 * L3: Ensuring that user actions trigger the correct internal logic:
-    * Simulating the event rather than the hardware click. Instead of checking click at coordinates (x, x), we call `app.nav_tree.selection_set("map")` and trigger the handler `on_nav_select`. We then asser the internal state, e.g. `app.nav_tree.selection() == "map".
+    * Simulating the event rather than the hardware click. Instead of checking click at coordinates (x, x), we call `app.nav_tree.selection_set("map")` and trigger the handler `on_nav_select`. We then assert the internal state, e.g. `app.nav_tree.selection() == "map".
 
 Since we share one app instance, we follow these rules to avoid flaky tests:
 
-* Reset state. If a test replies on the app being in a specific state (e.g. being one the "Core" tab), set that state explicitly at the start of the test. Do not assume the previous test left it there.
+* Reset state. If a test replies on the app being in a specific state (e.g. being on the "Core" tab), set that state explicitly at the start of the test. Do not assume the previous test left it there.
 
 ```
 def test_something_on_core_tab(app):
