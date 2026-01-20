@@ -88,43 +88,81 @@ class MapModel:
 
     # I/O -->
     def save_to_disk(self, filename):
-        # Save terrain
-        with open(filename, 'w', encoding="utf-8") as f:
-            for row in self.map_data:
-                f.write("".join(row) + "\n")
-
-        # Save entities
-        json_filename = os.path.splitext(filename)[0] + "_data.json"
-        export_list = [
-            {"x": x, "y": y, "type": d['type'], "id": d['id']}
-            for (x, y), d in self.entity_data.items()
+        """
+        Saves map and entities to a single JSON file.
+        Uses the 'safe save' pattern (write temp --> flush --> rename)
+        """
+        # Data packet prep - flatted into a list for JSON storage
+        entities_export = [
+            {"x": k[0], "y": k[1], "id": v['id']} 
+            for k, v in self.entity_data.items()
         ]
-        
-        with open(json_filename, 'w', encoding="utf-8") as f:
-            json.dump(export_list, f, indent=4)
-        
-        return json_filename
+
+        full_data = {
+            "meta": {"version": "1.0", "type": "cursed_map"},
+            "dimensions": {"width": self.width, "height": self.height},
+            "terrain": ["".join(row) for row in self.map_data],
+            "entities": entities_export
+        }
+
+        # Atomic write
+        temp_filename = filename + ".tmp"
+
+        try:
+            with open(temp_filename, 'w', encoding='utf-8') as f:
+                json.dump(full_data, f, indent=4)
+                # Force OS to write buffer to disk
+                f.flush()
+                os.fsync(f.fileno())
+            
+            # Atomic swap
+            # This is atomic on POSIX. On Windows it's atomic in modern Python (os.replace)
+            os.replace(temp_filename, filename)
+            
+        except Exception as e:
+            if os.path.exists(temp_filename):
+                os.remove(temp_filename)
+            raise IOError(f"Failed to save map: {str(e)}")
 
     def load_from_disk(self, filename):
-        with open(filename, 'r', encoding="utf-8") as f:
-            lines = [line.rstrip('\n') for line in f]
+        """
+        Loads a unified JSON map file.
+        """
+        if not os.path.exists(filename):
+            raise FileNotFoundError(f"File not found: {filename}")
+
+        with open(filename, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+
+        if "dimensions" not in data or "terrain" not in data:
+            raise ValueError("Invalid map file format")
+
+        # Load dimenions
+        self.width = data["dimensions"]["width"]
+        self.height = data["dimensions"]["height"]
         
-        self.height = len(lines)
-        self.width = max(len(l) for l in lines) if lines else 0
-        self.map_data = [list(line.ljust(self.width, '.')) for line in lines]
+        # Load terrain
+        raw_rows = data["terrain"]
+        # Converting list of strings back to list of lists
+        self.map_data = [list(row.ljust(self.width, '.')) for row in raw_rows]
         
-        # Load Entities
+        # Ensuring height matches data
+        if len(self.map_data) < self.height:
+            # Filling missing rows if file is corrupted/short
+            for _ in range(self.height - len(self.map_data)):
+                self.map_data.append(['.' * self.width])
+
+        # Load entities
         self.entity_data = {}
-        json_filename = os.path.splitext(filename)[0] + "_data.json"
-        if os.path.exists(json_filename):
-            with open(json_filename, 'r') as f:
-                loaded = json.load(f)
+        # Creating a lookup for entity definitions by ID
+        entity_lookup = {e['id']: e for e in CFG.ENTITY_TYPES}
+
+        for item in data.get("entities", []):
+            eid = item.get("id")
+            x, y = item.get("x"), item.get("y")
             
-            # Rehydrate entity data from ID
-            # (In a real app, optimize this lookup)
-            for item in loaded:
-                for proto in CFG.ENTITY_TYPES:
-                    if proto['id'] == item['id']:
-                        self.entity_data[(item['x'], item['y'])] = proto
-                        break
+            if eid in entity_lookup:
+                # Valid entity, place it
+                if 0 <= x < self.width and 0 <= y < self.height:
+                    self.entity_data[(x, y)] = entity_lookup[eid]
     # <-- I/O

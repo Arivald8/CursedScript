@@ -113,8 +113,8 @@ class Controller:
         fname = self.view.ask_filename_save()
         if fname:
             try:
-                json_name = self.model.save_to_disk(fname)
-                self.view.show_info("Success", f"Saved to {fname}\nEntities: {json_name}")
+                self.model.save_to_disk(fname)
+                self.view.show_info("Success", f"Saved to {fname}")
             except Exception as e:
                 self.view.show_error("Save Error", str(e))
 

@@ -142,10 +142,17 @@ class MapView(tk.Frame):
         self.tool_var.set(val)
 
     def ask_filename_save(self):
-        return filedialog.asksaveasfilename(filetypes=[("Map", "*.txt")])
+        return filedialog.asksaveasfilename(
+            parent=self, 
+            defaultextension=".json",
+            filetypes=[("Map JSON", "*.json"), ("All Files", "*.*")]
+        )
 
     def ask_filename_load(self):
-        return filedialog.askopenfilename(filetypes=[("Map", "*.txt")])
+        return filedialog.askopenfilename(
+            parent=self, 
+            filetypes=[("Map JSON", "*.json"), ("All Files", "*.*")]
+        )
     
     def show_info(self, title, msg):
         messagebox.showinfo(title, msg, parent=self)
