@@ -1,14 +1,14 @@
 from collections import deque
+from typing import TYPE_CHECKING
+from .cfg import CFG
+
+if TYPE_CHECKING:
+    from .editor import MapEditor
 
 class Paint:
-    def __init__(self, editor_instance, canvas_instance, cell_size):
-        """
-        :param editor_instance: Reference to the main MapEditor class
-        :param cell_size: Int
-        """
+    def __init__(self, editor_instance: 'MapEditor', canvas_instance):
         self.editor = editor_instance
         self.canvas = canvas_instance
-        self.cell_size = cell_size
         
     def paint_terrain(self, x, y):
         current_char = self.editor.current_terrain['char']
@@ -60,7 +60,7 @@ class Paint:
         self.draw_entity_visual(x, y, self.editor.current_entity)
 
     def draw_entity_visual(self, x, y, entity_def):
-        cs = self.cell_size
+        cs = CFG.CELL_SIZE
         x1, y1 = x * cs + 2, y * cs + 2
         x2, y2 = x * cs + cs - 2, y * cs + cs - 2
         

@@ -1,16 +1,22 @@
-from tkinter import simpledialog, ttk
+from tkinter import simpledialog
+import tkinter as tk
+from .cfg import CFG
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from .editor import MapEditor
+    from .handler import Handler
 
 class Mapper:
-    def __init__(self, editor_instance, handler_instance, canvas_instance, default_width, default_height, cell_size, terrain_types, font_size):
+    def __init__(
+            self, 
+            editor_instance: 'MapEditor', 
+            handler_instance: 'Handler', 
+            canvas_instance: tk.Canvas, 
+        ):
         self.editor = editor_instance
         self.handler = handler_instance
         self.canvas = canvas_instance
-        self.default_width = default_width
-        self.default_height = default_height
-        self.cell_size = cell_size
-        self.terrain_types = terrain_types
-        self.font_size = font_size
-
 
     def prompt_new_map(self):
         # Using self.winfo_toplevel() to make sure dialogs center on the main app
@@ -18,7 +24,7 @@ class Mapper:
             "Size", 
             "Width:", 
             parent=self.editor.winfo_toplevel(), 
-            initialvalue= self.default_width, 
+            initialvalue= CFG.DEFAULT_WIDTH, 
             minvalue=10
         )
 
@@ -26,7 +32,7 @@ class Mapper:
             "Size",
             "Height:",
             parent=self.editor.winfo_toplevel(),
-            initialvalue=self.default_height, 
+            initialvalue=CFG.DEFAULT_HEIGHT, 
             minvalue=10
         )
 
@@ -44,27 +50,27 @@ class Mapper:
         self.editor.cell_ids = []
         self.editor.entity_ids = {}
         
-        self.canvas.config(scrollregion=(0, 0, self.editor.width * self.cell_size, self.editor.height * self.cell_size))
+        self.canvas.config(scrollregion=(0, 0, self.editor.width * CFG.CELL_SIZE, self.editor.height * CFG.CELL_SIZE))
         
-        lookup = {t['char']: t for t in self.terrain_types}
+        lookup = {t['char']: t for t in CFG.TERRAIN_TYPES}
 
         for y in range(self.editor.height):
             row_ids = []
             for x in range(self.editor.width):
                 char = self.editor.map_data[y][x]
-                tile = lookup.get(char, self.terrain_types[0])
+                tile = lookup.get(char, CFG.TERRAIN_TYPES[0])
                 
-                x1, y1 = x * self.cell_size, y * self.cell_size
-                x2, y2 = x1 + self.cell_size, y1 + self.cell_size
+                x1, y1 = x * CFG.CELL_SIZE, y * CFG.CELL_SIZE
+                x2, y2 = x1 + CFG.CELL_SIZE, y1 + CFG.CELL_SIZE
                 
                 rect = self.canvas.create_rectangle(x1, y1, x2, y2, fill=tile['color'], outline="")
 
                 txt = self.canvas.create_text(
-                    x1 + self.cell_size/2,
-                    y1 + self.cell_size/2, 
+                    x1 + CFG.CELL_SIZE/2,
+                    y1 + CFG.CELL_SIZE/2, 
                     text=tile['symbol'], 
                     fill=tile['fg'], 
-                    font=("Arial", self.font_size)
+                    font=("Arial", CFG.FONT_SIZE)
                 )
 
                 row_ids.append((rect, txt))

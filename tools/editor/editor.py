@@ -1,40 +1,11 @@
 import tkinter as tk
-from tkinter import simpledialog, ttk
-
+from tkinter import ttk
+from .cfg import CFG
 from .paint import Paint
 from .file_io import FileIO
 from .handler import Handler
 from .mapper import Mapper
 
-# CONF
-DEFAULT_WIDTH = 60
-DEFAULT_HEIGHT = 40
-CELL_SIZE = 20  
-FONT_SIZE = 10
-
-TERRAIN_TYPES = [
-    {'char': '.', 'color': '#32CD32', 'fg': '#006400', 'name': 'Grass',     'symbol': '·'},
-    {'char': 'T', 'color': '#228B22', 'fg': '#000000', 'name': 'Tree',      'symbol': '♠'},
-    {'char': '~', 'color': '#1E90FF', 'fg': '#E0FFFF', 'name': 'Water',     'symbol': '≈'},
-    {'char': '#', 'color': '#DAA520', 'fg': '#8B4513', 'name': 'Road',      'symbol': '░'},
-    {'char': ':', 'color': '#F0E68C', 'fg': '#BDB76B', 'name': 'Sand',      'symbol': '░'},
-    {'char': '^', 'color': '#D3D3D3', 'fg': '#000000', 'name': 'Mountain',  'symbol': '▲'},
-    {'char': 'x', 'color': '#696969', 'fg': '#D3D3D3', 'name': 'Wall',      'symbol': '▒'},
-    {'char': 'M', 'color': '#2F4F4F', 'fg': '#708090', 'name': 'Cave/Rock', 'symbol': '█'},
-    {'char': 'O', 'color': '#8B0000', 'fg': '#FFFFFF', 'name': 'Building',  'symbol': '⌂'},
-    {'char': '+', 'color': '#4682B4', 'fg': '#FFD700', 'name': 'Bridge',    'symbol': '≡'},
-    {'char': ' ', 'color': '#000000', 'fg': '#000000', 'name': 'Void',      'symbol': ''},
-]
-
-# (Saved to JSON)
-ENTITY_TYPES = [
-    {'type': 'player',   'id': 'player_start', 'name': 'Player Start', 'color': '#FFFFFF', 'shape': 'star'},
-    {'type': 'creature', 'id': 'Ogre',         'name': 'Ogre',         'color': '#FF0000', 'shape': 'oval'},
-    {'type': 'creature', 'id': 'Goblin',       'name': 'Goblin',       'color': '#FF69B4', 'shape': 'oval'},
-    {'type': 'item',     'id': 'Sword',        'name': 'Sword',        'color': '#00FFFF', 'shape': 'diamond'},
-    {'type': 'item',     'id': 'Potion',       'name': 'Health Pot',   'color': '#00FF00', 'shape': 'diamond'},
-    {'type': 'item',     'id': 'Shield',       'name': 'Shield',       'color': '#FFA500', 'shape': 'diamond'},
-]
 
 class MapEditor(tk.Frame):
     def __init__(self, parent):
@@ -43,8 +14,8 @@ class MapEditor(tk.Frame):
         self.pack(fill=tk.BOTH, expand=True)
         
         # Data State
-        self.width = DEFAULT_WIDTH
-        self.height = DEFAULT_HEIGHT
+        self.width = CFG.DEFAULT_WIDTH
+        self.height = CFG.DEFAULT_HEIGHT
         self.map_data = []          # 2D array of chars
         self.entity_data = {}       # Dict: {(x,y): EntityDict}
         
@@ -65,23 +36,14 @@ class MapEditor(tk.Frame):
         # <-- in mapper.py
 
         # Tools State
-        self.painter = Paint(self, self.canvas, CELL_SIZE)
-        self.handler = Handler(self, self.painter, self.notebook, self.tool_var, CELL_SIZE)
-        self.mapper = Mapper(
-            self, 
-            self.handler,
-            self.canvas,
-            DEFAULT_WIDTH, 
-            DEFAULT_HEIGHT, 
-            CELL_SIZE, 
-            TERRAIN_TYPES,
-            FONT_SIZE
-        )
-        self.file_io = FileIO(self, self.mapper, TERRAIN_TYPES, ENTITY_TYPES)
+        self.painter = Paint(self, self.canvas)
+        self.handler = Handler(self, self.painter, self.notebook, self.tool_var)
+        self.mapper = Mapper(self, self.handler, self.canvas)
+        self.file_io = FileIO(self, self.mapper)
 
         self.selected_mode = "terrain" # 'terrain' or 'entity'
-        self.current_terrain = TERRAIN_TYPES[0]
-        self.current_entity = ENTITY_TYPES[0]
+        self.current_terrain = CFG.TERRAIN_TYPES[0]
+        self.current_entity = CFG.ENTITY_TYPES[0]
         self.tool_type = "brush"       # 'brush' or 'bucket'
         
         # Rendering State
@@ -131,7 +93,7 @@ class MapEditor(tk.Frame):
         canvas_t.pack(side="left", fill="both", expand=True)
         scroll_t.pack(side="right", fill="y")
 
-        for t in TERRAIN_TYPES:
+        for t in CFG.TERRAIN_TYPES:
             b = tk.Button(
                 scroll_frame_t, 
                 text=f"{t['symbol']} {t['name']}", 
@@ -146,7 +108,7 @@ class MapEditor(tk.Frame):
         page_entities = tk.Frame(self.notebook)
         self.notebook.add(page_entities, text='Entities')
         
-        for e in ENTITY_TYPES:
+        for e in CFG.ENTITY_TYPES:
             b = tk.Button(
                 page_entities, 
                 text=f"{e['name']}", 
