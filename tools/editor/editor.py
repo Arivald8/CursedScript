@@ -1,8 +1,7 @@
 import tkinter as tk
-from tkinter import filedialog, messagebox, simpledialog, ttk
-import json
-import os
-from collections import deque
+from tkinter import simpledialog, ttk
+
+from .paint import Paint
 from .file_io import save_map, load_map
 
 # CONF
@@ -48,6 +47,8 @@ class MapEditor(tk.Frame):
         self.entity_data = {}       # Dict: {(x,y): EntityDict}
         
         # Tool State
+        self.painter = Paint(self, CELL_SIZE)
+
         self.selected_mode = "terrain" # 'terrain' or 'entity'
         self.current_terrain = TERRAIN_TYPES[0]
         self.current_entity = ENTITY_TYPES[0]
@@ -244,124 +245,29 @@ class MapEditor(tk.Frame):
         if 0 <= x < self.width and 0 <= y < self.height:
             if self.selected_mode == "terrain":
                 if self.tool_type == "bucket":
-                    self.bucket_fill(x, y, self.current_terrain)
+                    self.painter.bucket_fill(x, y, self.current_terrain)
                 else:
-                    self.paint_terrain(x, y)
+                    self.painter.paint_terrain(x, y)
             elif self.selected_mode == "entity":
                 if self.tool_type == "eraser":
-                    self.erase_entity(x, y)
+                    self.painter.erase_entity(x, y)
                 else:
-                    self.paint_entity(x, y)
+                    self.painter.paint_entity(x, y)
 
     def on_drag(self, event):
         x, y = self.get_cell_coords(event)
         if 0 <= x < self.width and 0 <= y < self.height:
             if self.selected_mode == "terrain" and self.tool_type == "brush":
-                self.paint_terrain(x, y)
+                self.painter.paint_terrain(x, y)
             elif self.selected_mode == "entity" and self.tool_type == "brush":
-                self.paint_entity(x, y)
+                self.painter.paint_entity(x, y)
             elif self.selected_mode == "entity" and self.tool_type == "eraser":
-                self.erase_entity(x, y)
+                self.painter.erase_entity(x, y)
 
     def on_right_click(self, event):
         # Quick erase entity
         x, y = self.get_cell_coords(event)
-        self.erase_entity(x, y)
-
-    # Painting actions:
-    def paint_terrain(self, x, y):
-        if self.map_data[y][x] != self.current_terrain['char']:
-            self.map_data[y][x] = self.current_terrain['char']
-            self.update_cell_visual(x, y, self.current_terrain)
-
-    def bucket_fill(self, x, y, target_tile):
-        target_char = self.map_data[y][x]
-        fill_char = target_tile['char']
-        
-        if target_char == fill_char: return
-
-        queue = deque([(x, y)])
-        visited = set()
-        
-        while queue:
-            cx, cy = queue.popleft()
-            if (cx, cy) in visited: continue
-            visited.add((cx, cy))
-            
-            if 0 <= cx < self.width and 0 <= cy < self.height:
-                if self.map_data[cy][cx] == target_char:
-                    self.map_data[cy][cx] = fill_char
-                    self.update_cell_visual(cx, cy, target_tile)
-                    
-                    queue.append((cx+1, cy))
-                    queue.append((cx-1, cy))
-                    queue.append((cx, cy+1))
-                    queue.append((cx, cy-1))
-
-    def update_cell_visual(self, x, y, tile):
-        rect, txt = self.cell_ids[y][x]
-        self.canvas.itemconfig(rect, fill=tile['color'])
-        self.canvas.itemconfig(txt, text=tile['symbol'], fill=tile['fg'])
-
-    def paint_entity(self, x, y):
-        # Remove existing at this tile
-        if (x, y) in self.entity_data:
-            self.erase_entity(x, y)
-        
-        self.entity_data[(x, y)] = self.current_entity
-        self.draw_entity_visual(x, y, self.current_entity)
-
-    def draw_entity_visual(self, x, y, entity_def):
-        x1, y1 = x * CELL_SIZE + 2, y * CELL_SIZE + 2
-        x2, y2 = x * CELL_SIZE + CELL_SIZE - 2, y * CELL_SIZE + CELL_SIZE - 2
-        
-        if entity_def['shape'] == 'star':
-             # Simple circle for start to distinguish
-             eid = self.canvas.create_oval(
-                x1, 
-                y1, 
-                x2, 
-                y2, 
-                fill=entity_def['color'], 
-                outline="black", 
-                width=2
-            )
-             
-        elif entity_def['shape'] == 'diamond':
-            # Diamond polygon
-            cx, cy = x * CELL_SIZE + CELL_SIZE/2, y * CELL_SIZE + CELL_SIZE/2
-            offset = CELL_SIZE/2 - 2
-            eid = self.canvas.create_polygon(
-                cx, 
-                cy-offset, 
-                cx+offset, 
-                cy, 
-                cx, 
-                cy+offset, 
-                cx-offset, 
-                cy, 
-                fill=entity_def['color'], 
-                outline="black"
-            )
-
-        else:
-            eid = self.canvas.create_oval(
-                x1, 
-                y1, 
-                x2, 
-                y2, 
-                fill=entity_def['color'], 
-                outline="black"
-            )
-            
-        self.entity_ids[(x, y)] = eid
-
-    def erase_entity(self, x, y):
-        if (x, y) in self.entity_data:
-            del self.entity_data[(x, y)]
-            if (x, y) in self.entity_ids:
-                self.canvas.delete(self.entity_ids[(x, y)])
-                del self.entity_ids[(x, y)]
+        self.painter.erase_entity(x, y)
 
 
 if __name__ == "__main__":
