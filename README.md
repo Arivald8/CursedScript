@@ -33,9 +33,19 @@ CursedScript/
 │   └── sample_quest
 │       ├── assets
 │       ├── maps
+│       │   ├── map_file.txt
+│       │   ├── map_file_data.json
+│       │   ├── test_map_file.txt
+│       │   └── test_map_file_data.json
 │       ├── scripts
 │       └── config.json
 ├── tools
+│   └── editor
+│       ├── cfg.py
+│       ├── config.json
+│       ├── controller.py
+│       ├── model.py
+│       └── view.py
 ├── .gitignore
 ├── LICENSE
 ├── main.py
