@@ -1,5 +1,6 @@
 import tkinter as tk
 from tkinter import ttk
+from tools.editor.editor import MapEditor
 
 class EditorPage(ttk.Frame):
     """
@@ -59,15 +60,15 @@ class CoreConfigView(EditorPage):
         super().__init__(parent, "Core Game Configuration", sub_sections)
 
 
-class MapEditorView(EditorPage):
+class MapEditorView(ttk.Frame):
+    """
+    Special Case: Inherits directly from ttk.Frame, NOT EditorPage.
+    This is because MapEditor has its own full toolbar/canvas layout
+    and doesn't need the generic title/scroller wrapper.
+    """
     def __init__(self, parent):
-        sub_sections = [
-            "Tile System (Characters, colours, properties)",
-            "Map Layers (Ground, Objects, Overhead)",
-            "Region Definitions",
-            "Spawn Points (Player & NPC)"
-        ]
-        super().__init__(parent, "Map Editor", sub_sections)
+        super().__init__(parent)
+        self.editor_instance = MapEditor(self)
     
 
 class RPGConfiguratorApp(tk.Tk):
@@ -133,8 +134,6 @@ class RPGConfiguratorApp(tk.Tk):
     def init_navigation(self):
         """
         Populates sidebar treeview.
-
-        Navigation structure: (ID, Display Name)
         """
         nav_items = [
             ("core", "Core Configuration"),
