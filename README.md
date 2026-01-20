@@ -2,17 +2,29 @@
 ## Curses-Powered Engine for Terminal Based Games
 #### !README will be updated as the project progresses!
 
-Will allow easy creation of terminal based games.
+Will allow easy creation of terminal based games (when ready!).
 
-* Dependencies: 
-    * windows-curses 
-    * pytest
-    * pytest-mock
+Pivoted to a Model-View-Controller architecture to ensure scalability and maintainability:
 
+* **Model**: To handle data integrity, algos, and file persistence. Operates independently of the graphical interface, which will hopefully help in the future with automated testing.
+* **View**: To manage the graphical ui. Implements object pooling rendering for the grid canvas. Rather than destroying and recreating objects during updates, the view recycles existing canvas elements, ensuring O(1) rendering performance and responsiveness even with large map dimensions.
+* **Controller**: To orchestrate the comms between the Model and View, handling user input events and app state.
+
+Terrain types, visual assets and game entities are defined in external JSON files, allowing anyone to modify the game's palette and object definitions without having to alter the source.
+
+The file I/O system uses a 'safe save' pattern. Data is written to a temporary buffer and synced to the physical disk before being swapped with the existing file. This is for the risk of data corruption during write failures.
+
+Editor tools for now only feature a brush and a bucket fill (flood fill), as well as entity placement layers with tabs, but will be expanded significantly. 
+
+Dependencies: 
+* windows-curses 
+* pytest
+* pytest-mock
+__________________
 ### Current State:
 * Map Editor: Fully working (Create new, paint entities, objects, save, load map.)
 
-## Directory Structure
+## Current Directory Structure
 
 ```
 CursedScript/
