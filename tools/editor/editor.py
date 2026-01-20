@@ -107,9 +107,9 @@ class MapEditor(tk.Frame):
         tk.Label(self.toolbar, text="   TOOLS   ", bg="#e0e0e0", font=("Arial", 9, "bold")).pack(pady=(15, 5))
         
         # Tool select
-        tk.Radiobutton(self.toolbar, text="Pencil", variable=self.tool_var, value="brush", bg="#e0e0e0", command=self.set_tool).pack(anchor="w", padx=20)
-        tk.Radiobutton(self.toolbar, text="Bucket Fill", variable=self.tool_var, value="bucket", bg="#e0e0e0", command=self.set_tool).pack(anchor="w", padx=20)
-        tk.Radiobutton(self.toolbar, text="Eraser (Entities)", variable=self.tool_var, value="eraser", bg="#e0e0e0", command=self.set_tool).pack(anchor="w", padx=20)
+        tk.Radiobutton(self.toolbar, text="Pencil", variable=self.tool_var, value="brush", bg="#e0e0e0", command=self.handler.set_tool).pack(anchor="w", padx=20)
+        tk.Radiobutton(self.toolbar, text="Bucket Fill", variable=self.tool_var, value="bucket", bg="#e0e0e0", command=self.handler.set_tool).pack(anchor="w", padx=20)
+        tk.Radiobutton(self.toolbar, text="Eraser (Entities)", variable=self.tool_var, value="eraser", bg="#e0e0e0", command=self.handler.set_tool).pack(anchor="w", padx=20)
 
         # Tabs for layers
         tk.Label(self.toolbar, text="   LAYERS   ", bg="#e0e0e0", font=("Arial", 9, "bold")).pack(pady=(15, 5))
@@ -137,7 +137,7 @@ class MapEditor(tk.Frame):
                 text=f"{t['symbol']} {t['name']}", 
                 bg=t['color'], fg=t['fg'], 
                 anchor="w",
-                command=lambda x=t: self.select_terrain(x)
+                command=lambda x=t: self.handler.select_terrain(x)
             )
 
             b.pack(fill=tk.X, pady=1)
@@ -152,7 +152,7 @@ class MapEditor(tk.Frame):
                 text=f"{e['name']}", 
                 bg=e['color'], fg="black", 
                 anchor="w",
-                command=lambda x=e: self.select_entity(x)
+                command=lambda x=e: self.handler.select_entity(x)
             )
 
             b.pack(fill=tk.X, pady=1)
@@ -170,17 +170,6 @@ class MapEditor(tk.Frame):
         self.canvas.bind("<Button-1>", self.handler.on_click)
         self.canvas.bind("<B1-Motion>", self.handler.on_drag)
         self.canvas.bind("<Button-3>", self.handler.on_right_click) # Eraser shortcut
-
-    def set_tool(self):
-        self.tool_type = self.tool_var.get()
-
-    def select_terrain(self, t):
-        self.current_terrain = t
-        self.notebook.select(0)
-
-    def select_entity(self, e):
-        self.current_entity = e
-        self.notebook.select(1)
 
 
 if __name__ == "__main__":

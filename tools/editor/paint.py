@@ -65,7 +65,6 @@ class Paint:
         x2, y2 = x * cs + cs - 2, y * cs + cs - 2
         
         if entity_def['shape'] == 'star':
-             # Simple circle for start to distinguish
              eid = self.canvas.create_oval(
                 x1, 
                 y1, 
@@ -77,7 +76,6 @@ class Paint:
             )
              
         elif entity_def['shape'] == 'diamond':
-            # Diamond polygon
             cx, cy = x * cs + cs/2, y * cs + cs/2
             offset = cs/2 - 2
             eid = self.canvas.create_polygon(
