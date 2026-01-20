@@ -14,6 +14,39 @@ class GameRenderer:
         self.ui_height = 2
         self.inv_width = 0
 
+    def _hex_to_curses_color(self, hex_code):
+        """
+        Approximates a HEX string (e.g., '#32CD32') to a curses color constant.
+        Returns: (curses_color_const, is_bold)
+        """
+        if not hex_code or not isinstance(hex_code, str):
+            return curses.COLOR_WHITE, False
+            
+        hex_code = hex_code.lstrip('#')
+        try:
+            r, g, b = tuple(int(hex_code[i:i+2], 16) for i in (0, 2, 4))
+        except ValueError:
+            return curses.COLOR_WHITE, False
+
+        # thresholding logic for standard 8-color terminals
+        # (Red, Green, Blue)
+        
+        # dominant channel
+        m = max(r, g, b)
+        is_bold = m > 128 # Bright colors get bold
+        
+        if r > 100 and g < 100 and b < 100: return curses.COLOR_RED, is_bold
+        if g > 100 and r < 100 and b < 100: return curses.COLOR_GREEN, is_bold
+        if b > 100 and r < 100 and g < 100: return curses.COLOR_BLUE, is_bold
+        
+        if r > 100 and g > 100 and b < 100: return curses.COLOR_YELLOW, is_bold
+        if r > 100 and b > 100 and g < 100: return curses.COLOR_MAGENTA, is_bold
+        if g > 100 and b > 100 and r < 100: return curses.COLOR_CYAN, is_bold
+        
+        if r < 100 and g < 100 and b < 100: return curses.COLOR_BLACK, is_bold # Dark Grey
+        
+        return curses.COLOR_WHITE, is_bold
+
     def init_colors(self):
         """
         Initializes curses colors based on the loaded configuration.
@@ -38,24 +71,21 @@ class GameRenderer:
         pair_id = 10
         for t_def in self.terrain_config:
             char = t_def['char']
+            
+            # 'symbol' from config if available, else 'char'
             symbol = t_def.get('symbol', char)
-            name = t_def.get('name', '').lower()
+            if not symbol: symbol = char # Fallback if symbol is empty string
             
-            # heuristic mapping based on name/common types
-            fg = curses.COLOR_WHITE
-            bg = -1
+            hex_color = t_def.get('color', '#FFFFFF')
+            c_const, is_bold = self._hex_to_curses_color(hex_color)
             
-            if 'grass' in name: fg = curses.COLOR_GREEN
-            elif 'water' in name: fg = curses.COLOR_BLUE
-            elif 'mountain' in name: fg = curses.COLOR_WHITE; bg = curses.COLOR_BLACK
-            elif 'road' in name or 'sand' in name: fg = curses.COLOR_YELLOW
-            elif 'wall' in name: fg = curses.COLOR_MAGENTA
-            elif 'tree' in name: fg = curses.COLOR_GREEN
+            curses.init_pair(pair_id, c_const, -1)
             
-            curses.init_pair(pair_id, fg, bg)
-            
-            # Store in map: logic_char -> (visual_char, color_pair)
-            self.char_map[char] = (symbol, curses.color_pair(pair_id))
+            attr = curses.color_pair(pair_id)
+            if is_bold:
+                attr = attr | curses.A_BOLD
+
+            self.char_map[char] = (symbol, attr)
             pair_id += 1
 
     def update_dimensions(self):
@@ -86,8 +116,9 @@ class GameRenderer:
         """Looks up character in the config-generated map."""
         if char in self.char_map:
             return self.char_map[char]
-        # Fallback
-        return char, curses.color_pair(0)
+        
+        # Fallback if map file contains a char not in config
+        return char, curses.color_pair(1)
 
     def draw_text_anchored(self, text, anchor="top_left", offset_x=0, offset_y=0, color=0):
         """
