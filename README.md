@@ -7,6 +7,10 @@ main.py is currently the configurator/editor.
 
 Dependencies so far: windows-curses, pytest
 
+### Change Log:
+* Added editor.py
+* MapEditorView inherits directly from ttk.Frame so MapEditor(self) is simply instantiated. This lets the map editor take over the entire right-hand pane of the app.
+
 ## Current Directory Structure
 
 ```
