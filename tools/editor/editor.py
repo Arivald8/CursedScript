@@ -4,6 +4,7 @@ from tkinter import simpledialog, ttk
 from .paint import Paint
 from .file_io import FileIO
 from .handler import Handler
+from .mapper import Mapper
 
 # CONF
 DEFAULT_WIDTH = 60
@@ -51,11 +52,32 @@ class MapEditor(tk.Frame):
         self.toolbar = tk.Frame(self, width=250, bg="#e0e0e0", relief=tk.RAISED, bd=1)
         self.notebook = ttk.Notebook(self.toolbar)
         self.tool_var = tk.StringVar(value="brush")
+        # in mappter.py -->
+        self.canvas_frame = tk.Frame(self, bg="gray")
+        self.v_scroll = tk.Scrollbar(self.canvas_frame, orient=tk.VERTICAL)
+        self.h_scroll = tk.Scrollbar(self.canvas_frame, orient=tk.HORIZONTAL)
+        self.canvas = tk.Canvas(
+            self.canvas_frame, 
+            bg="#202020", 
+            yscrollcommand=self.v_scroll.set,
+            xscrollcommand=self.h_scroll.set
+        )
+        # <-- in mapper.py
 
         # Tools State
-        self.painter = Paint(self, CELL_SIZE)
+        self.painter = Paint(self, self.canvas, CELL_SIZE)
         self.file_io = FileIO(self, TERRAIN_TYPES, ENTITY_TYPES)
         self.handler = Handler(self, self.painter, self.notebook, self.tool_var, CELL_SIZE)
+        self.mapper = Mapper(
+            self, 
+            self.handler,
+            self.canvas,
+            DEFAULT_WIDTH, 
+            DEFAULT_HEIGHT, 
+            CELL_SIZE, 
+            TERRAIN_TYPES,
+            FONT_SIZE
+        )
 
         self.selected_mode = "terrain" # 'terrain' or 'entity'
         self.current_terrain = TERRAIN_TYPES[0]
@@ -67,7 +89,7 @@ class MapEditor(tk.Frame):
         self.entity_ids = {}        # Entity Canvas IDs {(x,y): id}
 
         self.setup_ui()
-        self.new_map()
+        self.mapper.new_map()
 
     def setup_ui(self):
         # Left: Toolbar
@@ -78,7 +100,7 @@ class MapEditor(tk.Frame):
         btn_frame = tk.Frame(self.toolbar, bg="#e0e0e0")
         btn_frame.pack(fill=tk.X, padx=5)
 
-        tk.Button(btn_frame, text="New", command=self.prompt_new_map, width=8).pack(side=tk.LEFT, padx=2)
+        tk.Button(btn_frame, text="New", command=self.mapper.prompt_new_map, width=8).pack(side=tk.LEFT, padx=2)
         tk.Button(btn_frame, text="Save", command=self.file_io.save_map, width=8).pack(side=tk.LEFT, padx=2)
         tk.Button(btn_frame, text="Load", command=self.file_io.load_map, width=8).pack(side=tk.LEFT, padx=2)
 
@@ -132,23 +154,12 @@ class MapEditor(tk.Frame):
                 anchor="w",
                 command=lambda x=e: self.select_entity(x)
             )
-            
+
             b.pack(fill=tk.X, pady=1)
 
         # Right: Canvas
-        self.canvas_frame = tk.Frame(self, bg="gray")
         self.canvas_frame.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True)
 
-        self.v_scroll = tk.Scrollbar(self.canvas_frame, orient=tk.VERTICAL)
-        self.h_scroll = tk.Scrollbar(self.canvas_frame, orient=tk.HORIZONTAL)
-
-        self.canvas = tk.Canvas(
-            self.canvas_frame, 
-            bg="#202020", 
-            yscrollcommand=self.v_scroll.set,
-            xscrollcommand=self.h_scroll.set
-        )
-        
         self.v_scroll.config(command=self.canvas.yview)
         self.h_scroll.config(command=self.canvas.xview)
         
@@ -170,69 +181,6 @@ class MapEditor(tk.Frame):
     def select_entity(self, e):
         self.current_entity = e
         self.notebook.select(1)
-
-    # Map logic:
-    def prompt_new_map(self):
-        # Using self.winfo_toplevel() to make sure dialogs center on the main app
-        w = simpledialog.askinteger(
-            "Size", 
-            "Width:", 
-            parent=self.winfo_toplevel(), 
-            initialvalue=DEFAULT_WIDTH, 
-            minvalue=10
-        )
-
-        h = simpledialog.askinteger(
-            "Size",
-            "Height:",
-            parent=self.winfo_toplevel(),
-            initialvalue=DEFAULT_HEIGHT, 
-            minvalue=10
-        )
-
-        if w and h:
-            self.width, self.height = w, h
-            self.new_map()
-
-    def new_map(self):
-        self.map_data = [['.' for _ in range(self.width)] for _ in range(self.height)]
-        self.entity_data = {}
-        self.draw_grid()
-
-    def draw_grid(self):
-        self.canvas.delete("all")
-        self.cell_ids = []
-        self.entity_ids = {}
-        
-        self.canvas.config(scrollregion=(0, 0, self.width * CELL_SIZE, self.height * CELL_SIZE))
-        
-        lookup = {t['char']: t for t in TERRAIN_TYPES}
-
-        for y in range(self.height):
-            row_ids = []
-            for x in range(self.width):
-                char = self.map_data[y][x]
-                tile = lookup.get(char, TERRAIN_TYPES[0])
-                
-                x1, y1 = x * CELL_SIZE, y * CELL_SIZE
-                x2, y2 = x1 + CELL_SIZE, y1 + CELL_SIZE
-                
-                rect = self.canvas.create_rectangle(x1, y1, x2, y2, fill=tile['color'], outline="")
-
-                txt = self.canvas.create_text(
-                    x1 + CELL_SIZE/2,
-                    y1 + CELL_SIZE/2, 
-                    text=tile['symbol'], 
-                    fill=tile['fg'], 
-                    font=("Arial", FONT_SIZE)
-                )
-
-                row_ids.append((rect, txt))
-            self.cell_ids.append(row_ids)
-        
-        # Redrawing entities if loading
-        for coord, entity in self.entity_data.items():
-            self.draw_entity_visual(coord[0], coord[1], entity)
 
 
 if __name__ == "__main__":

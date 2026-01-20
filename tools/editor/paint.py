@@ -1,12 +1,13 @@
 from collections import deque
 
 class Paint:
-    def __init__(self, editor_instance, cell_size):
+    def __init__(self, editor_instance, canvas_instance, cell_size):
         """
         :param editor_instance: Reference to the main MapEditor class
         :param cell_size: Int
         """
         self.editor = editor_instance
+        self.canvas = canvas_instance
         self.cell_size = cell_size
         
     def paint_terrain(self, x, y):
@@ -47,8 +48,8 @@ class Paint:
 
     def update_cell_visual(self, x, y, tile):
         rect, txt = self.editor.cell_ids[y][x]
-        self.editor.canvas.itemconfig(rect, fill=tile['color'])
-        self.editor.canvas.itemconfig(txt, text=tile['symbol'], fill=tile['fg'])
+        self.canvas.itemconfig(rect, fill=tile['color'])
+        self.canvas.itemconfig(txt, text=tile['symbol'], fill=tile['fg'])
 
     def paint_entity(self, x, y):
         # Remove existing at this tile
@@ -65,7 +66,7 @@ class Paint:
         
         if entity_def['shape'] == 'star':
              # Simple circle for start to distinguish
-             eid = self.editor.canvas.create_oval(
+             eid = self.canvas.create_oval(
                 x1, 
                 y1, 
                 x2, 
@@ -79,7 +80,7 @@ class Paint:
             # Diamond polygon
             cx, cy = x * cs + cs/2, y * cs + cs/2
             offset = cs/2 - 2
-            eid = self.editor.canvas.create_polygon(
+            eid = self.canvas.create_polygon(
                 cx, 
                 cy-offset, 
                 cx+offset, 
@@ -93,7 +94,7 @@ class Paint:
             )
 
         else:
-            eid = self.editor.canvas.create_oval(
+            eid = self.canvas.create_oval(
                 x1, 
                 y1, 
                 x2, 
@@ -108,5 +109,5 @@ class Paint:
         if (x, y) in self.editor.entity_data:
             del self.editor.entity_data[(x, y)]
             if (x, y) in self.editor.entity_ids:
-                self.editor.canvas.delete(self.editor.entity_ids[(x, y)])
+                self.canvas.delete(self.editor.entity_ids[(x, y)])
                 del self.editor.entity_ids[(x, y)]
