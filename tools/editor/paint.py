@@ -3,7 +3,8 @@ from collections import deque
 class Paint:
     def __init__(self, editor_instance, cell_size):
         """
-        Initialise the painter once.
+        :param editor_instance: Reference to the main MapEditor class
+        :param cell_size: Int
         """
         self.editor = editor_instance
         self.cell_size = cell_size

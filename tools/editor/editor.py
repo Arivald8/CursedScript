@@ -3,6 +3,7 @@ from tkinter import simpledialog, ttk
 
 from .paint import Paint
 from .file_io import FileIO
+from .handler import Handler
 
 # CONF
 DEFAULT_WIDTH = 60
@@ -46,9 +47,15 @@ class MapEditor(tk.Frame):
         self.map_data = []          # 2D array of chars
         self.entity_data = {}       # Dict: {(x,y): EntityDict}
         
+        # Temp for refactor
+        self.toolbar = tk.Frame(self, width=250, bg="#e0e0e0", relief=tk.RAISED, bd=1)
+        self.notebook = ttk.Notebook(self.toolbar)
+        self.tool_var = tk.StringVar(value="brush")
+
         # Tools State
         self.painter = Paint(self, CELL_SIZE)
         self.file_io = FileIO(self, TERRAIN_TYPES, ENTITY_TYPES)
+        self.handler = Handler(self, self.painter, self.notebook, self.tool_var, CELL_SIZE)
 
         self.selected_mode = "terrain" # 'terrain' or 'entity'
         self.current_terrain = TERRAIN_TYPES[0]
@@ -64,31 +71,28 @@ class MapEditor(tk.Frame):
 
     def setup_ui(self):
         # Left: Toolbar
-        toolbar = tk.Frame(self, width=250, bg="#e0e0e0", relief=tk.RAISED, bd=1)
-        toolbar.pack(side=tk.LEFT, fill=tk.Y)
+        self.toolbar.pack(side=tk.LEFT, fill=tk.Y)
         
         # File IO
-        tk.Label(toolbar, text="   FILE   ", bg="#e0e0e0", font=("Arial", 9, "bold")).pack(pady=5)
-        btn_frame = tk.Frame(toolbar, bg="#e0e0e0")
+        tk.Label(self.toolbar, text="   FILE   ", bg="#e0e0e0", font=("Arial", 9, "bold")).pack(pady=5)
+        btn_frame = tk.Frame(self.toolbar, bg="#e0e0e0")
         btn_frame.pack(fill=tk.X, padx=5)
 
         tk.Button(btn_frame, text="New", command=self.prompt_new_map, width=8).pack(side=tk.LEFT, padx=2)
         tk.Button(btn_frame, text="Save", command=self.file_io.save_map, width=8).pack(side=tk.LEFT, padx=2)
         tk.Button(btn_frame, text="Load", command=self.file_io.load_map, width=8).pack(side=tk.LEFT, padx=2)
 
-        tk.Label(toolbar, text="   TOOLS   ", bg="#e0e0e0", font=("Arial", 9, "bold")).pack(pady=(15, 5))
+        tk.Label(self.toolbar, text="   TOOLS   ", bg="#e0e0e0", font=("Arial", 9, "bold")).pack(pady=(15, 5))
         
         # Tool select
-        self.tool_var = tk.StringVar(value="brush")
-        tk.Radiobutton(toolbar, text="Pencil", variable=self.tool_var, value="brush", bg="#e0e0e0", command=self.set_tool).pack(anchor="w", padx=20)
-        tk.Radiobutton(toolbar, text="Bucket Fill", variable=self.tool_var, value="bucket", bg="#e0e0e0", command=self.set_tool).pack(anchor="w", padx=20)
-        tk.Radiobutton(toolbar, text="Eraser (Entities)", variable=self.tool_var, value="eraser", bg="#e0e0e0", command=self.set_tool).pack(anchor="w", padx=20)
+        tk.Radiobutton(self.toolbar, text="Pencil", variable=self.tool_var, value="brush", bg="#e0e0e0", command=self.set_tool).pack(anchor="w", padx=20)
+        tk.Radiobutton(self.toolbar, text="Bucket Fill", variable=self.tool_var, value="bucket", bg="#e0e0e0", command=self.set_tool).pack(anchor="w", padx=20)
+        tk.Radiobutton(self.toolbar, text="Eraser (Entities)", variable=self.tool_var, value="eraser", bg="#e0e0e0", command=self.set_tool).pack(anchor="w", padx=20)
 
         # Tabs for layers
-        tk.Label(toolbar, text="   LAYERS   ", bg="#e0e0e0", font=("Arial", 9, "bold")).pack(pady=(15, 5))
-        self.notebook = ttk.Notebook(toolbar)
+        tk.Label(self.toolbar, text="   LAYERS   ", bg="#e0e0e0", font=("Arial", 9, "bold")).pack(pady=(15, 5))
         self.notebook.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
-        self.notebook.bind("<<NotebookTabChanged>>", self.on_tab_change)
+        self.notebook.bind("<<NotebookTabChanged>>", self.handler.on_tab_change)
 
         # Tab 1: Terrain
         page_terrain = tk.Frame(self.notebook)
@@ -142,25 +146,12 @@ class MapEditor(tk.Frame):
         self.h_scroll.pack(side=tk.BOTTOM, fill=tk.X)
         self.canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 
-        self.canvas.bind("<Button-1>", self.on_click)
-        self.canvas.bind("<B1-Motion>", self.on_drag)
-        self.canvas.bind("<Button-3>", self.on_right_click) # Eraser shortcut
+        self.canvas.bind("<Button-1>", self.handler.on_click)
+        self.canvas.bind("<B1-Motion>", self.handler.on_drag)
+        self.canvas.bind("<Button-3>", self.handler.on_right_click) # Eraser shortcut
 
     def set_tool(self):
         self.tool_type = self.tool_var.get()
-
-    def on_tab_change(self, event):
-        # try: just to handle cases where notebook isn't fully initialised
-        try:
-            tab_name = self.notebook.tab(self.notebook.select(), "text")
-            if tab_name == "Terrain":
-                self.selected_mode = "terrain"
-                if self.tool_type == "eraser": self.tool_var.set("brush"); self.set_tool()
-            else:
-                self.selected_mode = "entity"
-                if self.tool_type == "bucket": self.tool_var.set("brush"); self.set_tool() # No bucket for entities
-        except:
-            pass
 
     def select_terrain(self, t):
         self.current_terrain = t
@@ -232,42 +223,6 @@ class MapEditor(tk.Frame):
         # Redrawing entities if loading
         for coord, entity in self.entity_data.items():
             self.draw_entity_visual(coord[0], coord[1], entity)
-
-    def get_cell_coords(self, event):
-        cx = self.canvas.canvasx(event.x)
-        cy = self.canvas.canvasy(event.y)
-        col = int(cx // CELL_SIZE)
-        row = int(cy // CELL_SIZE)
-        return col, row
-
-    def on_click(self, event):
-        x, y = self.get_cell_coords(event)
-        if 0 <= x < self.width and 0 <= y < self.height:
-            if self.selected_mode == "terrain":
-                if self.tool_type == "bucket":
-                    self.painter.bucket_fill(x, y, self.current_terrain)
-                else:
-                    self.painter.paint_terrain(x, y)
-            elif self.selected_mode == "entity":
-                if self.tool_type == "eraser":
-                    self.painter.erase_entity(x, y)
-                else:
-                    self.painter.paint_entity(x, y)
-
-    def on_drag(self, event):
-        x, y = self.get_cell_coords(event)
-        if 0 <= x < self.width and 0 <= y < self.height:
-            if self.selected_mode == "terrain" and self.tool_type == "brush":
-                self.painter.paint_terrain(x, y)
-            elif self.selected_mode == "entity" and self.tool_type == "brush":
-                self.painter.paint_entity(x, y)
-            elif self.selected_mode == "entity" and self.tool_type == "eraser":
-                self.painter.erase_entity(x, y)
-
-    def on_right_click(self, event):
-        # Quick erase entity
-        x, y = self.get_cell_coords(event)
-        self.painter.erase_entity(x, y)
 
 
 if __name__ == "__main__":
