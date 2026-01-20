@@ -34,7 +34,7 @@ class Paint:
 
             visited.add((cx, cy))
             
-            if 0 <= cx < self.width and 0 <= cy < self.editor.height:
+            if 0 <= cx < self.editor.width and 0 <= cy < self.editor.height:
                 if self.editor.map_data[cy][cx] == target_char:
                     self.editor.map_data[cy][cx] = fill_char
                     self.update_cell_visual(cx, cy, target_tile)

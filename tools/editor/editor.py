@@ -2,7 +2,7 @@ import tkinter as tk
 from tkinter import simpledialog, ttk
 
 from .paint import Paint
-from .file_io import save_map, load_map
+from .file_io import FileIO
 
 # CONF
 DEFAULT_WIDTH = 60
@@ -46,8 +46,9 @@ class MapEditor(tk.Frame):
         self.map_data = []          # 2D array of chars
         self.entity_data = {}       # Dict: {(x,y): EntityDict}
         
-        # Tool State
+        # Tools State
         self.painter = Paint(self, CELL_SIZE)
+        self.file_io = FileIO(self, TERRAIN_TYPES, ENTITY_TYPES)
 
         self.selected_mode = "terrain" # 'terrain' or 'entity'
         self.current_terrain = TERRAIN_TYPES[0]
@@ -71,10 +72,9 @@ class MapEditor(tk.Frame):
         btn_frame = tk.Frame(toolbar, bg="#e0e0e0")
         btn_frame.pack(fill=tk.X, padx=5)
 
-        # Using lambda to pass 'self' to standalone external functions
         tk.Button(btn_frame, text="New", command=self.prompt_new_map, width=8).pack(side=tk.LEFT, padx=2)
-        tk.Button(btn_frame, text="Save", command=lambda: save_map(self), width=8).pack(side=tk.LEFT, padx=2)
-        tk.Button(btn_frame, text="Load", command=lambda: load_map(self, ENTITY_TYPES), width=8).pack(side=tk.LEFT, padx=2)
+        tk.Button(btn_frame, text="Save", command=self.file_io.save_map, width=8).pack(side=tk.LEFT, padx=2)
+        tk.Button(btn_frame, text="Load", command=self.file_io.load_map, width=8).pack(side=tk.LEFT, padx=2)
 
         tk.Label(toolbar, text="   TOOLS   ", bg="#e0e0e0", font=("Arial", 9, "bold")).pack(pady=(15, 5))
         
