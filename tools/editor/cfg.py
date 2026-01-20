@@ -5,6 +5,14 @@ class CFG:
     CELL_SIZE = 20  
     FONT_SIZE = 10
 
+    # Helpers to find data by keys
+    @staticmethod
+    def get_terrain_by_char(char):
+        for t in CFG.TERRAIN_TYPES:
+            if t['char'] == char:
+                return t
+        return CFG.TERRAIN_TYPES[0]
+
     TERRAIN_TYPES = [
         {'char': '.', 'color': '#32CD32', 'fg': '#006400', 'name': 'Grass',     'symbol': '·'},
         {'char': 'T', 'color': '#228B22', 'fg': '#000000', 'name': 'Tree',      'symbol': '♠'},

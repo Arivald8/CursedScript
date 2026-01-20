@@ -1,6 +1,6 @@
 import tkinter as tk
 from tkinter import ttk
-from tools.editor.editor import MapEditor
+from tools.editor.controller import Controller
 
 class EditorPage(ttk.Frame):
     """
@@ -63,12 +63,12 @@ class CoreConfigView(EditorPage):
 class MapEditorView(ttk.Frame):
     """
     Special Case: Inherits directly from ttk.Frame, NOT EditorPage.
-    This is because MapEditor has its own full toolbar/canvas layout
+    This is because the map editor has its own full toolbar/canvas layout
     and doesn't need the generic title/scroller wrapper.
     """
     def __init__(self, parent):
         super().__init__(parent)
-        self.editor_instance = MapEditor(self)
+        self.map_controller = Controller(self)
     
 
 class RPGConfiguratorApp(tk.Tk):
