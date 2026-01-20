@@ -27,15 +27,12 @@ class Handler:
 
     def select_terrain(self, t):
         """Sets current terrain and forces the Notebook tab to Terrain."""
-        self.current_terrain = t
+        self.editor.current_terrain = t
         self.notebook.select(0)
-        # Auto-switch to brush to avoid confusion if bucket is selected
-        self.tool_var.set("brush")
-        self.set_tool()
 
     def select_entity(self, e):
         """Sets current entity and forces the Notebook tab to Entities."""
-        self.current_entity = e
+        self.editor.current_entity = e
         self.notebook.select(1)
 
     def on_click(self, event):

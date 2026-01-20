@@ -3,13 +3,14 @@ import json
 import os
 
 class FileIO:
-    def __init__(self, editor_instance, terrain_types, entity_types):
+    def __init__(self, editor_instance, mapper_instance, terrain_types, entity_types):
         """
         :param editor_instance: Reference to the main MapEditor class
         :param terrain_types: List of dictionary definitions for terrain
         :param entity_types: List of dictionary definitions for entities
         """
         self.editor = editor_instance
+        self.mapper = mapper_instance
         self.terrain_types = terrain_types
         self.entity_types = entity_types
 
@@ -89,7 +90,7 @@ class FileIO:
                     if e_id in entity_lookup:
                         self.editor.entity_data[(x, y)] = entity_lookup[e_id]
             
-            self.editor.draw_grid()
+            self.mapper.draw_grid()
 
             messagebox.showinfo(
                 "Loaded", 

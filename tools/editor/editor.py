@@ -66,7 +66,6 @@ class MapEditor(tk.Frame):
 
         # Tools State
         self.painter = Paint(self, self.canvas, CELL_SIZE)
-        self.file_io = FileIO(self, TERRAIN_TYPES, ENTITY_TYPES)
         self.handler = Handler(self, self.painter, self.notebook, self.tool_var, CELL_SIZE)
         self.mapper = Mapper(
             self, 
@@ -78,6 +77,7 @@ class MapEditor(tk.Frame):
             TERRAIN_TYPES,
             FONT_SIZE
         )
+        self.file_io = FileIO(self, self.mapper, TERRAIN_TYPES, ENTITY_TYPES)
 
         self.selected_mode = "terrain" # 'terrain' or 'entity'
         self.current_terrain = TERRAIN_TYPES[0]
