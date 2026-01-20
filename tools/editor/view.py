@@ -9,8 +9,13 @@ class MapView(tk.Frame):
         self.pack(fill=tk.BOTH, expand=True)
 
         # Rendering State
-        self.cell_ids = []   # Grid IDs (rect, text)
-        self.entity_ids = {} # Entity Canvas IDs {(x,y): id}
+        # Storing the IDs in a 1D list for rows, containing lists of cells
+        self.cell_matrix = []
+        self.rows = 0
+        self.cols = 0
+
+        # Entity tracking: {(x, y): canvas_id}
+        self.entity_ids = {}
 
         # UI var
         self.tool_var = tk.StringVar(value="brush")
@@ -38,7 +43,9 @@ class MapView(tk.Frame):
             self.canvas_frame, 
             bg="#202020",
             yscrollcommand=self.v_scroll.set,
-            xscrollcommand=self.h_scroll.set
+            xscrollcommand=self.h_scroll.set,
+            xscrollincrement=1,
+            yscrollincrement=1
         )
         
         self.v_scroll.config(command=self.canvas.yview)
@@ -60,8 +67,13 @@ class MapView(tk.Frame):
         tk.Label(self.toolbar, text=" TOOLS ", bg="#e0e0e0", font=("Arial", 9, "bold")).pack(pady=(15, 5))
         modes = [("Pencil", "brush"), ("Bucket", "bucket"), ("Eraser", "eraser")]
         for text, val in modes:
-            tk.Radiobutton(self.toolbar, text=text, variable=self.tool_var, value=val, 
-                           bg="#e0e0e0").pack(anchor="w", padx=20)
+            tk.Radiobutton(
+                self.toolbar, 
+                text=text, 
+                variable=self.tool_var, 
+                value=val, 
+                bg="#e0e0e0"
+            ).pack(anchor="w", padx=20)
 
     def _build_layer_tabs(self):
         self.notebook = ttk.Notebook(self.toolbar)
@@ -71,16 +83,40 @@ class MapView(tk.Frame):
         # Terrain tab
         page_t = tk.Frame(self.notebook)
         self.notebook.add(page_t, text='Terrain')
+
+        # Canvas scroll for terrain list
+        c_frame = tk.Canvas(page_t, bg="#e0e0e0", highlightthickness=0)
+        scr_bar = tk.Scrollbar(page_t, orient="vertical", command=c_frame.yview)
+        inner_frame = tk.Frame(c_frame, bg="#e0e0e0")
+
+        inner_frame.bind("<Configure>", lambda e: c_frame.configure(scrollregion=c_frame.bbox("all")))
+        c_frame.create_window((0,0), window=inner_frame, anchor="nw")
+        c_frame.configure(yscrollcommand=scr_bar.set)
+        
+        c_frame.pack(side="left", fill="both", expand=True)
+        scr_bar.pack(side="right", fill="y")
+
+
         for t in CFG.TERRAIN_TYPES:
-            tk.Button(page_t, text=f"{t['symbol']} {t['name']}", bg=t['color'], fg=t['fg'], anchor="w",
-                      command=lambda x=t: self.controller.select_terrain(x)).pack(fill=tk.X)
+            tk.Button(
+                page_t, 
+                text=f"{t['symbol']} {t['name']}", 
+                bg=t['color'], fg=t['fg'], 
+                anchor="w",
+                command=lambda x=t: self.controller.select_terrain(x)
+            ).pack(fill=tk.X, pady=1)
 
         # Entity tab
         page_e = tk.Frame(self.notebook)
         self.notebook.add(page_e, text='Entities')
         for e in CFG.ENTITY_TYPES:
-            tk.Button(page_e, text=e['name'], bg=e['color'], anchor="w",
-                      command=lambda x=e: self.controller.select_entity(x)).pack(fill=tk.X)
+            tk.Button(
+                page_e, 
+                text=e['name'],
+                bg=e['color'], 
+                anchor="w",
+                command=lambda x=e: self.controller.select_entity(x)
+            ).pack(fill=tk.X, pady=1)
 
     def _setup_bindings(self):
         self.canvas.bind("<Button-1>", self._handle_click)
@@ -94,8 +130,9 @@ class MapView(tk.Frame):
         self.controller.handle_drag(self.canvas.canvasx(event.x), self.canvas.canvasy(event.y))
 
     def _on_tab_changed(self, event):
-        tab = self.notebook.tab(self.notebook.select(), "text")
-        self.controller.switch_layer(tab)
+        if self.notebook.select():
+            tab = self.notebook.tab(self.notebook.select(), "text")
+            self.controller.switch_layer(tab)
 
     # Public API for Controller -->
     def get_tool(self):
@@ -119,46 +156,102 @@ class MapView(tk.Frame):
 
     # Rendering -->
     def init_grid(self, width, height, map_data):
-        """Full redraw of the grid structure"""
-        self.canvas.delete("all")
-        self.cell_ids = []
-        self.entity_ids = {}
-        
-        self.canvas.config(scrollregion=(0, 0, width * CFG.CELL_SIZE, height * CFG.CELL_SIZE))
+        """
+        If the grid size is the same as before, we reuse the existing canvas items
+        (object pooling) instead of destroying and recreating them.
+        """
+        px_w = width * CFG.CELL_SIZE
+        px_h = height * CFG.CELL_SIZE
+        self.canvas.config(scrollregion=(0, 0, px_w, px_h))
 
+        # Check if full rebuild is needed
+        full_rebuild = (width != self.cols or height != self.rows)
+
+        if full_rebuild:
+            self.canvas.delete("all")
+            self.cell_matrix = []
+            self.entity_ids = {} # Entities must be cleared on resize
+            self.rows = height
+            self.cols = width
+
+            # Create new grid
+            for y in range(height):
+                row_list = []
+                for x in range(width):
+                    x1, y1 = x * CFG.CELL_SIZE, y * CFG.CELL_SIZE
+
+                    r = self.canvas.create_rectangle(
+                        x1, 
+                        y1, 
+                        x1+CFG.CELL_SIZE, 
+                        y1+CFG.CELL_SIZE,
+                        outline="",
+                        tags=("terrain", f"row_{y}", f"col_{x}")
+                    )
+
+                    t = self.canvas.create_text(
+                        x1+CFG.CELL_SIZE/2, 
+                        y1+CFG.CELL_SIZE/2, 
+                        font=("Arial", CFG.FONT_SIZE),
+                        tags=("terrain_txt", f"row_{y}", f"col_{x}")
+                    )
+
+                    row_list.append({"rect": r, "text": t})
+                self.cell_matrix.append(row_list)
+        else:
+            # Grid size is the same, just clear entities.
+            # Using tab 'entity' to delete all creatures/items
+            self.canvas.delete("entity")
+            self.entity_ids = {}
+
+        # Apply data to grid (batch update)
         for y in range(height):
-            row_ids = []
             for x in range(width):
                 char = map_data[y][x]
-                t = CFG.get_terrain_by_char(char)
-                x1, y1 = x * CFG.CELL_SIZE, y * CFG.CELL_SIZE
-                
-                # Draw terrain
-                r = self.canvas.create_rectangle(x1, y1, x1+CFG.CELL_SIZE, y1+CFG.CELL_SIZE, fill=t['color'], outline="")
-                txt = self.canvas.create_text(x1+CFG.CELL_SIZE/2, y1+CFG.CELL_SIZE/2, text=t['symbol'], fill=t['fg'])
-                row_ids.append((r, txt))
+                t_def = CFG.get_terrain_by_char(char)
+                self.update_terrain_at(x, y, t_def)
 
-            self.cell_ids.append(row_ids)
 
     def update_terrain_at(self, x, y, terrain_def):
-        if 0 <= y < len(self.cell_ids) and 0 <= x < len(self.cell_ids[0]):
-            r, txt = self.cell_ids[y][x]
-            self.canvas.itemconfig(r, fill=terrain_def['color'])
-            self.canvas.itemconfig(txt, text=terrain_def['symbol'], fill=terrain_def['fg'])
+        """Updates a specific cell's visual appearance."""
+        if 0 <= y < self.rows and 0 <= x < self.cols:
+            cell = self.cell_matrix[y][x]
+            self.canvas.itemconfig(cell['rect'], fill=terrain_def['color'])
+            self.canvas.itemconfig(cell['text'], text=terrain_def['symbol'], fill=terrain_def['fg'])
+
 
     def draw_entity(self, x, y, ent_def):
         # Remove old if exists
         self.remove_entity(x, y)
         
         cs = CFG.CELL_SIZE
-        cx, cy = x * cs + cs/2, y * cs + cs/2
+
+        # Padding
+        p = 2 
+        x1, y1 = x * cs + p, y * cs + p
+        x2, y2 = x * cs + cs - p, y * cs + cs - p
         
+        tags = ("entity", f"ent_{x}_{y}")
+
         if ent_def['shape'] == 'star':
-            eid = self.canvas.create_oval(x*cs+2, y*cs+2, x*cs+cs-2, y*cs+cs-2, 
-                                          fill=ent_def['color'], width=2)
+            # simplified
+            eid = self.canvas.create_oval(x1, y1, x2, y2, fill=ent_def['color'], width=2, tags=tags)
+        elif ent_def['shape'] == 'diamond':
+            cx, cy = x * cs + cs/2, y * cs + cs/2
+            offset = cs/2 - 2
+            eid = self.canvas.create_polygon(
+                cx, 
+                cy-offset, 
+                cx+offset, 
+                cy, 
+                cx, 
+                cy+offset, 
+                cx-offset, 
+                cy, 
+                fill=ent_def['color'], outline="black", tags=tags
+            )
         else:
-            eid = self.canvas.create_oval(x*cs+4, y*cs+4, x*cs+cs-4, y*cs+cs-4, 
-                                          fill=ent_def['color'])
+            eid = self.canvas.create_oval(x1+2, y1+2, x2-2, y2-2, fill=ent_def['color'], tags=tags)
             
         self.entity_ids[(x, y)] = eid
 
