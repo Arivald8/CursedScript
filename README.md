@@ -57,6 +57,12 @@ Previous changes:
     A new map_converter.py tool has been added to convert image files (PNG) into the new JSON map format, preserving both terrain classifications and entity placements. This comes from a previous project "nitem". 
 ____________
 
+
+![Alt text](/images/screenshot1.png)
+![Alt text](/images/screenshot2.png)
+![Alt text](/images/screenshot3.png)
+
+
 ### Dependencies: 
 * windows-curses 
 * pytest
