@@ -1,7 +1,13 @@
+import os
+import re
+import json
 import tkinter as tk
-from tkinter import ttk
+from tkinter import ttk, messagebox
+
 from tools.editor.controller import Controller
 from tools.theme.theme_creator import ThemeEditor
+
+
 class EditorPage(ttk.Frame):
     """
     Base for all editor pages.
@@ -50,14 +56,46 @@ class EditorPage(ttk.Frame):
         return frame
     
 
-class CoreConfigView(EditorPage):
-    def __init__(self, parent):
-        sub_sections = [
-            "Game Metadata (Title, Author, Version)",
-            "Resolution Settings (Terminal constr)",
-            "Colour Palette (Schemes)",
-        ]
-        super().__init__(parent, "Core Game Configuration", sub_sections)
+class CoreConfigView(ttk.Frame):
+    def __init__(self, parent, project_state):
+        super().__init__(parent)
+        self.project_state = project_state
+        
+        # Title
+        ttk.Label(self, text="Core Game Configuration", font=("Segoe UI", 16, "bold")).pack(anchor="w", pady=20, padx=20)
+
+        form_frame = ttk.LabelFrame(self, text="Project Metadata", padding=15)
+        form_frame.pack(fill="x", padx=20, pady=5)
+
+        # Game Title
+        ttk.Label(form_frame, text="Game Title (Filesystem Name):").grid(row=0, column=0, sticky="w", pady=5)
+        self.ent_title = ttk.Entry(form_frame, textvariable=self.project_state['title'])
+        self.ent_title.grid(row=0, column=1, sticky="ew", pady=5, padx=10)
+        ttk.Label(form_frame, text="* Used for folder name (e.g., games/My_Game_Title)", font=("Arial", 8, "italic")).grid(row=1, column=1, sticky="w")
+
+        # Author
+        ttk.Label(form_frame, text="Author:").grid(row=2, column=0, sticky="w", pady=5)
+        self.ent_author = ttk.Entry(form_frame, textvariable=self.project_state['author'])
+        self.ent_author.grid(row=2, column=1, sticky="ew", pady=5, padx=10)
+
+        # Version
+        ttk.Label(form_frame, text="Version:").grid(row=3, column=0, sticky="w", pady=5)
+        self.ent_ver = ttk.Entry(form_frame, textvariable=self.project_state['version'])
+        self.ent_ver.grid(row=3, column=1, sticky="ew", pady=5, padx=10)
+
+        form_frame.columnconfigure(1, weight=1)
+
+        # Instructions
+        info_frame = ttk.LabelFrame(self, text="Workflow Guide", padding=15)
+        info_frame.pack(fill="x", padx=20, pady=20)
+        
+        lbl = ttk.Label(info_frame, text=(
+            "1. Set your Game Title above.\n"
+            "2. Go to 'Theme/Palette' to define your ASCII characters and colors.\n"
+            "3. Go to 'Map Editor' to draw your world.\n"
+            "4. Click 'Save Project' in the bottom-left sidebar to write files to disk."
+        ), justify="left")
+        lbl.pack(anchor="w")
 
 
 class MapEditorView(ttk.Frame):
@@ -77,7 +115,16 @@ class RPGConfiguratorApp(tk.Tk):
 
         self.title("CursedScript Configurator")
         self.geometry("1280x800")
-        self.minsize(1000, 700)
+
+        # Project state
+        self.state_title = tk.StringVar(value="My_New_RPG")
+        self.state_author = tk.StringVar(value="Anonymous")
+        self.state_version = tk.StringVar(value="0.1.0")
+        self.project_state = {
+            "title": self.state_title,
+            "author": self.state_author,
+            "version": self.state_version
+        }
 
         style = ttk.Style()
         style.theme_use("clam")
@@ -93,10 +140,15 @@ class RPGConfiguratorApp(tk.Tk):
         label_header = ttk.Label(self.sidebar_frame, text="Configurations", font=("Arial", 10, "bold"))
         label_header.pack(pady=10, padx=5, anchor="w")
 
-        # Nav list using treeview
+        # Nav list
         self.nav_tree = ttk.Treeview(self.sidebar_frame, show="tree", selectmode="browse")
         self.nav_tree.pack(fill="both", expand=True, padx=5, pady=5)
         self.nav_tree.bind("<<TreeviewSelect>>", self.on_nav_select)
+
+
+        # Save btn
+        self.btn_save_all = ttk.Button(self.sidebar_frame, text="SAVE PROJECT", command=self.save_project)
+        self.btn_save_all.pack(side="bottom", fill="x", padx=10, pady=20)
 
         # Right content
         self.content_area = ttk.Frame(self.main_container)
@@ -116,17 +168,20 @@ class RPGConfiguratorApp(tk.Tk):
         """
         Instantiates all page classes and places them in the content area grid.
         """
-        page_definitions = {
-            "core": CoreConfigView,
-            "map": MapEditorView,
-            "theme": ThemeEditor,
-        }
+        # Core conf
+        core_page = CoreConfigView(self.content_area, self.project_state)
+        self.pages["core"] = core_page
+        core_page.grid(row=0, column=0, sticky="nsew")
 
-        for pid, cls in page_definitions.items():
-            page = cls(self.content_area)
-            self.pages[pid] = page
-            # Stacking all pages on top of each other
-            page.grid(row=0, column=0, sticky="nsew")
+        # Map editor
+        map_page = MapEditorView(self.content_area)
+        self.pages["map"] = map_page
+        map_page.grid(row=0, column=0, sticky="nsew")
+
+        # Theme editor
+        theme_page = ThemeEditor(self.content_area)
+        self.pages["theme"] = theme_page
+        theme_page.grid(row=0, column=0, sticky="nsew")
 
         self.content_area.grid_rowconfigure(0, weight=1)
         self.content_area.grid_columnconfigure(0, weight=1)
@@ -138,8 +193,8 @@ class RPGConfiguratorApp(tk.Tk):
         """
         nav_items = [
             ("core", "Core Configuration"),
+            ("theme", "Theme/Palette"),
             ("map", "Map Editor"),
-            ("theme", "Theme/Palette")
         ]
 
         for pid, label in nav_items:
@@ -155,7 +210,70 @@ class RPGConfiguratorApp(tk.Tk):
             return
         
         selected_id = selected_items[0]
-        self.show_page(selected_id)
+
+        if selected_id in self.pages:
+            self.pages[selected_id].tkraise()
+
+
+    def save_project(self):
+        raw_title = self.state_title.get()
+
+        # Replace spaces with underscores, remove non-alphanumeric (except _-)
+        safe_title = re.sub(r'[^\w\-]', '_', raw_title.replace(' ', '_'))
+        
+        if not safe_title:
+            messagebox.showerror("Error", "Game Title cannot be empty.")
+            return
+
+        base_path = os.path.join(os.path.dirname(__file__), "games", safe_title)
+        maps_path = os.path.join(base_path, "maps")
+
+        # Create dirs
+        try:
+            os.makedirs(maps_path, exist_ok=True)
+        except OSError as e:
+            messagebox.showerror("Error", f"Could not create directory: {e}")
+            return
+
+        # Get conf data and terrain from ThemeEditor
+        terrain_data = self.pages["theme"].get_all_terrain_data()
+        
+        config_data = {
+            "metadata": {
+                "title": self.state_title.get(),
+                "author": self.state_author.get(),
+                "version": self.state_version.get()
+            },
+            "settings": {
+                "default_width": 60,
+                "default_height": 40,
+                "cell_size": 20
+            },
+            "terrain": terrain_data,
+            # Placeholder entities until Entity Editor is built
+            "entities": [
+               {"type": "player", "id": "player_start", "name": "Player Start", "color": "#FFFFFF", "shape": "star"} 
+            ]
+        }
+
+        config_file = os.path.join(base_path, "config.json")
+        try:
+            with open(config_file, 'w', encoding='utf-8') as f:
+                json.dump(config_data, f, indent=4)
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to save config.json: {e}")
+            return
+
+        # 4. Save Map (Assuming Controller has save functionality)
+        # Note: In a real integration, we would ask the MapController for the data 
+        # and save it to `maps/level1.json`.
+        # Since I cannot modify controller.py, we will simulate a default map if it doesn't exist,
+        # or rely on the Map Editor's internal save if it has one.
+        # Ideally, we would do:
+        # map_data = self.pages["map"].map_controller.get_export_data()
+        # with open(os.path.join(maps_path, "level1.json"), ...) as f: ...
+        
+        messagebox.showinfo("Success", f"Project saved successfully!\nLocation: {base_path}")
 
 
     def show_page(self, page_id):

@@ -82,7 +82,6 @@ class ThemeView(ttk.Frame):
         self._create_buttons()
 
     def _create_form(self):
-        # Grid layout for form
         f = self.editor_frame
         
         ttk.Label(f, text="Terrain Name:").grid(row=0, column=0, sticky="w", pady=5)
@@ -168,14 +167,58 @@ class ThemeController:
         self.refresh_list()
 
     def load_sample_data(self):
-        # this would come from main.py loading config.json
-        # but we initialize with some defaults for the tool
-        defaults = [
-            {"char": ".", "color": "#00FF00", "fg": "#000000", "name": "Grass", "symbol": "."},
-            {"char": "~", "color": "#FFFFFF", "fg": "#0000FF", "name": "Water", "symbol": "~"},
-            {"char": "#", "color": "#8B4513", "fg": "#FFFF00", "name": "Road", "symbol": "#"},
+        """
+        Populates the model with a catalog of default roguelike chars.
+        """
+        GRASS = "#00FF00"; D_GRASS = "#006400"
+        WATER = "#FFFFFF"; D_WATER = "#0000FF"
+        ROAD  = "#8B4513"; D_ROAD  = "#FFFF00"
+        STONE = "#808080"; D_STONE = "#202020"
+        WOOD  = "#A0522D"; D_WOOD  = "#000000"
+
+        catalogue = [
+            # Standard terrain
+            {"char": ".", "symbol": ".", "color": GRASS, "fg": "#000000", "name": "Grass / Floor"},
+            {"char": ",", "symbol": ",", "color": "#32CD32", "fg": "#000000", "name": "Tall Grass"},
+            {"char": "~", "symbol": "≈", "color": WATER, "fg": D_WATER, "name": "Water / Liquid"},
+            {"char": "#", "symbol": "░", "color": ROAD, "fg": D_ROAD, "name": "Road / Path"},
+            {"char": ":", "symbol": "░", "color": "#F0E68C", "fg": "#BDB76B", "name": "Sand / Dust"},
+            {"char": "T", "symbol": "♠", "color": "#90EE90", "fg": D_GRASS, "name": "Tree / Forest"},
+            {"char": "t", "symbol": "♣", "color": "#006400", "fg": "#000000", "name": "Small Tree / Bush"},
+            {"char": "^", "symbol": "▲", "color": "#FFFFFF", "fg": "#808080", "name": "Mountain / Peak"},
+            {"char": "M", "symbol": "█", "color": "#696969", "fg": "#2F4F4F", "name": "Cave / Rock"},
+            
+            # Structures
+            {"char": "x", "symbol": "▒", "color": "#D3D3D3", "fg": "#696969", "name": "Wall (Stone)"},
+            {"char": "-", "symbol": "─", "color": WOOD, "fg": D_WOOD, "name": "Wall (Horizontal)"},
+            {"char": "|", "symbol": "│", "color": WOOD, "fg": D_WOOD, "name": "Wall (Vertical)"},
+            {"char": "+", "symbol": "+", "color": "#FFD700", "fg": "#000000", "name": "Door / Closed"},
+            {"char": "/", "symbol": "/", "color": "#FFD700", "fg": "#000000", "name": "Door / Open"},
+            {"char": ">", "symbol": ">", "color": "#FFFFFF", "fg": "#000000", "name": "Stairs Down"},
+            {"char": "<", "symbol": "<", "color": "#FFFFFF", "fg": "#000000", "name": "Stairs Up"},
+            {"char": "O", "symbol": "⌂", "color": "#FF4500", "fg": "#000000", "name": "Building / Shrine"},
+            {"char": "=", "symbol": "≡", "color": "#8B4513", "fg": "#000000", "name": "Bridge"},
+
+            # Items / Objects
+            {"char": "$", "symbol": "$", "color": "#FFD700", "fg": "#000000", "name": "Gold / Treasure"},
+            {"char": "!", "symbol": "!", "color": "#FF00FF", "fg": "#000000", "name": "Potion"},
+            {"char": "?", "symbol": "?", "color": "#ADFF2F", "fg": "#000000", "name": "Scroll"},
+            {"char": ")", "symbol": ")", "color": "#C0C0C0", "fg": "#000000", "name": "Weapon"},
+            {"char": "[", "symbol": "[", "color": "#8B4513", "fg": "#000000", "name": "Armor"},
+            {"char": "*", "symbol": "*", "color": "#FF0000", "fg": "#000000", "name": "Gem / Magic"},
+
+            # Enemies (Generic)
+            {"char": "g", "symbol": "g", "color": "#32CD32", "fg": "#000000", "name": "Goblin"},
+            {"char": "o", "symbol": "o", "color": "#556B2F", "fg": "#000000", "name": "Orc"},
+            {"char": "D", "symbol": "D", "color": "#FF0000", "fg": "#000000", "name": "Dragon"},
+            {"char": "@", "symbol": "@", "color": "#00FFFF", "fg": "#000000", "name": "Player"},
+            
+            # Atmospheric
+            {"char": " ", "symbol": " ", "color": "#000000", "fg": "#000000", "name": "Void / Empty"},
+            {"char": "_", "symbol": "_", "color": "#ADD8E6", "fg": "#000000", "name": "Ice / Fog"}
         ]
-        self.model.set_data(defaults)
+
+        self.model.set_data(catalogue)
 
     def refresh_list(self):
         # just clear tree
@@ -184,14 +227,18 @@ class ThemeController:
         
         # Repopulate
         for idx, item in enumerate(self.model.get_data()):
+            display_str = f"[{item.get('char')}] {item.get('name')}"
             self.view.tree.insert("", "end", iid=idx, values=(item.get("char"), item.get("name")))
 
     def on_select(self, event):
         selected = self.view.tree.selection()
-        if not selected: return
+        if not selected: 
+            return
         
         index = int(selected[0])
+
         data = self.model.get_terrain(index)
+
         if data:
             self.view.var_name.set(data.get("name", ""))
             self.view.var_char.set(data.get("char", ""))
@@ -211,7 +258,6 @@ class ThemeController:
         self.view.update_preview()
 
     def on_save(self):
-        # Collect data
         data = {
             "name": self.view.var_name.get(),
             "char": self.view.var_char.get()[0] if self.view.var_char.get() else "?",
@@ -233,7 +279,8 @@ class ThemeController:
 
     def on_delete(self):
         selected = self.view.tree.selection()
-        if not selected: return
+        if not selected: 
+            return
         
         if messagebox.askyesno("Confirm", "Delete this terrain type?"):
             index = int(selected[0])
@@ -261,3 +308,7 @@ class ThemeEditor(ttk.Frame):
         self.view = ThemeView(self)
         self.view.pack(fill="both", expand=True)
         self.controller = ThemeController(self.model, self.view)
+
+    def get_all_terrain_data(self):
+        """Used by main.py to save config.json"""
+        return self.model.get_data()
