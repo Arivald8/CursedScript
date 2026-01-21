@@ -144,9 +144,10 @@ class ThemeView(ttk.Frame):
 
 
 class ThemeController:
-    def __init__(self, model, view):
+    def __init__(self, model, view, on_update_callback=None):
         self.model = model
         self.view = view
+        self.on_update_callback = on_update_callback
 
         # Event bindings
         self.view.tree.bind("<<TreeviewSelect>>", self.on_select)
@@ -277,6 +278,10 @@ class ThemeController:
         
         self.refresh_list()
 
+        if self.on_update_callback:
+            # Sending the full updates list to the main app
+            self.on_update_callback(self.model.get_data())
+
     def on_delete(self):
         selected = self.view.tree.selection()
         if not selected: 
@@ -302,12 +307,12 @@ class ThemeEditor(ttk.Frame):
     """
     Wrapper class to be imported in main.py.
     """
-    def __init__(self, parent):
+    def __init__(self, parent, on_theme_change=None):
         super().__init__(parent)
         self.model = ThemeModel()
         self.view = ThemeView(self)
         self.view.pack(fill="both", expand=True)
-        self.controller = ThemeController(self.model, self.view)
+        self.controller = ThemeController(self.model, self.view, on_update_callback=on_theme_change)
 
     def get_all_terrain_data(self):
         """Used by main.py to save config.json"""

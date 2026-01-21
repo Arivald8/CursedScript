@@ -30,6 +30,14 @@ class Controller:
         """
         self.fixed_save_path = path
 
+    def sync_terrain_data(self, terrain_data):
+        """
+        Updates the CFG with new terrain definitions from the Theme Editor
+        and redraws the current map to reflect changes immediately.
+        """
+        CFG.update_terrain_data(terrain_data)
+        self._refresh_full_view()
+
     def _refresh_full_view(self):
         self.view.init_grid(self.model.width, self.model.height, self.model.map_data)
         for (x, y), ent in self.model.entity_data.items():
