@@ -16,7 +16,7 @@ class GameLoader:
         if not os.path.exists(path):
             raise FileNotFoundError(f"Config not found at {path}")
             
-        with open(path, 'r') as f:
+        with open(path, 'r', encoding='utf-8') as f:
             return json.load(f)
         
     def parse_templates(self):
