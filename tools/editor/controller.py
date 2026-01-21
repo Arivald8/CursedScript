@@ -36,6 +36,7 @@ class Controller:
         and redraws the current map to reflect changes immediately.
         """
         CFG.update_terrain_data(terrain_data)
+        self.view.refresh_terrain_sidebar()
         self._refresh_full_view()
 
     def _refresh_full_view(self):

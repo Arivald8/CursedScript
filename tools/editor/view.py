@@ -88,13 +88,14 @@ class MapView(tk.Frame):
         # Canvas scroll for terrain list
         c_frame = tk.Canvas(page_t, bg="#e0e0e0", highlightthickness=0)
         scr_bar = tk.Scrollbar(page_t, orient="vertical", command=c_frame.yview)
-        inner_frame = tk.Frame(c_frame, bg="#e0e0e0")
+
+        self.terrain_frame = tk.Frame(c_frame, bg="#e0e0e0")
 
         # Scroll cfg
-        inner_frame.bind("<Configure>", lambda e: c_frame.configure(scrollregion=c_frame.bbox("all")))
+        self.terrain_frame.bind("<Configure>", lambda e: c_frame.configure(scrollregion=c_frame.bbox("all")))
         
         # Creating window inside canvas
-        win_id = c_frame.create_window((0,0), window=inner_frame, anchor="nw")
+        win_id = c_frame.create_window((0,0), window=self.terrain_frame, anchor="nw")
         
         # and forcing inner_frame to match canvas width (prevents buttons from being too narrow)
         c_frame.bind("<Configure>", lambda e: c_frame.itemconfig(win_id, width=e.width))
@@ -104,14 +105,7 @@ class MapView(tk.Frame):
         c_frame.pack(side="left", fill="both", expand=True)
         scr_bar.pack(side="right", fill="y")
 
-        for t in CFG.TERRAIN_TYPES:
-            tk.Button(
-                inner_frame,
-                text=f"{t['symbol']} {t['name']}", 
-                bg=t['color'], fg=t['fg'], 
-                anchor="w",
-                command=lambda x=t: self.controller.select_terrain(x)
-            ).pack(fill=tk.X, pady=1)
+        self.refresh_terrain_sidebar()
 
         # Entity tab
         page_e = tk.Frame(self.notebook)
@@ -123,6 +117,21 @@ class MapView(tk.Frame):
                 bg=e['color'], 
                 anchor="w",
                 command=lambda x=e: self.controller.select_entity(x)
+            ).pack(fill=tk.X, pady=1)
+
+    def refresh_terrain_sidebar(self):
+        """Clears and rebuilds the terrain buttons based on current CFG."""
+        for widget in self.terrain_frame.winfo_children():
+            widget.destroy()
+
+        # Recreate buttons from current data
+        for t in CFG.TERRAIN_TYPES:
+            tk.Button(
+                self.terrain_frame,
+                text=f"{t['symbol']} {t['name']}", 
+                bg=t['color'], fg=t['fg'], 
+                anchor="w",
+                command=lambda x=t: self.controller.select_terrain(x)
             ).pack(fill=tk.X, pady=1)
 
     def _setup_bindings(self):
