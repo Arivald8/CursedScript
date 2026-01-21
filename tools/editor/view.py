@@ -90,17 +90,23 @@ class MapView(tk.Frame):
         scr_bar = tk.Scrollbar(page_t, orient="vertical", command=c_frame.yview)
         inner_frame = tk.Frame(c_frame, bg="#e0e0e0")
 
+        # Scroll cfg
         inner_frame.bind("<Configure>", lambda e: c_frame.configure(scrollregion=c_frame.bbox("all")))
-        c_frame.create_window((0,0), window=inner_frame, anchor="nw")
+        
+        # Creating window inside canvas
+        win_id = c_frame.create_window((0,0), window=inner_frame, anchor="nw")
+        
+        # and forcing inner_frame to match canvas width (prevents buttons from being too narrow)
+        c_frame.bind("<Configure>", lambda e: c_frame.itemconfig(win_id, width=e.width))
+
         c_frame.configure(yscrollcommand=scr_bar.set)
         
         c_frame.pack(side="left", fill="both", expand=True)
         scr_bar.pack(side="right", fill="y")
 
-
         for t in CFG.TERRAIN_TYPES:
             tk.Button(
-                page_t, 
+                inner_frame,
                 text=f"{t['symbol']} {t['name']}", 
                 bg=t['color'], fg=t['fg'], 
                 anchor="w",
