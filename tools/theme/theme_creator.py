@@ -94,14 +94,14 @@ class ThemeView(ttk.Frame):
         ttk.Entry(f, textvariable=self.var_symbol, width=5).grid(row=2, column=1, sticky="w", pady=5)
 
         # Color pickers
-        ttk.Label(f, text="Text Color (Hex):").grid(row=3, column=0, sticky="w", pady=5)
+        ttk.Label(f, text="Background Color (Hex):").grid(row=3, column=0, sticky="w", pady=5)
         c_frame1 = ttk.Frame(f)
         c_frame1.grid(row=3, column=1, sticky="w")
         ttk.Entry(c_frame1, textvariable=self.var_color_txt, width=10).pack(side="left", padx=(0,5))
         self.btn_pick_txt = tk.Button(c_frame1, text="Pick", width=4, relief="flat")
         self.btn_pick_txt.pack(side="left")
 
-        ttk.Label(f, text="Background Color (Hex):").grid(row=4, column=0, sticky="w", pady=5)
+        ttk.Label(f, text="Entity Color (Hex):").grid(row=4, column=0, sticky="w", pady=5)
         c_frame2 = ttk.Frame(f)
         c_frame2.grid(row=4, column=1, sticky="w")
         ttk.Entry(c_frame2, textvariable=self.var_color_bg, width=10).pack(side="left", padx=(0,5))

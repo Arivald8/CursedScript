@@ -4,7 +4,7 @@ import random
 from .objects import Item, Creature
 
 # temp
-WALKABLE_CHARS = {'.', '#', ':', ' ', '+', 'T'}
+WALKABLE_CHARS = {'.', '#', ':', ' ', '+', 'T', ','}
 
 class World:
     def __init__(self, width, height, terrain_data):
