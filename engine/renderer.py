@@ -20,7 +20,7 @@ class GameRenderer:
         Returns: (curses_color_const, is_bold)
         """
         if not hex_code or not isinstance(hex_code, str):
-            return curses.COLOR_WHITE, False
+            return curses.COLOR_BLACK, False 
             
         hex_code = hex_code.lstrip('#')
         try:
@@ -28,22 +28,34 @@ class GameRenderer:
         except ValueError:
             return curses.COLOR_WHITE, False
 
-        # thresholding logic for standard 8-color terminals
-        # (Red, Green, Blue)
-        
-        # dominant channel
+        # Determine boldness (brightness)
+        # If the max channel is very high, we treat it as bold (bright)
         m = max(r, g, b)
-        is_bold = m > 128 # Bright colors get bold
-        
-        if r > 100 and g < 100 and b < 100: return curses.COLOR_RED, is_bold
-        if g > 100 and r < 100 and b < 100: return curses.COLOR_GREEN, is_bold
-        if b > 100 and r < 100 and g < 100: return curses.COLOR_BLUE, is_bold
-        
-        if r > 100 and g > 100 and b < 100: return curses.COLOR_YELLOW, is_bold
-        if r > 100 and b > 100 and g < 100: return curses.COLOR_MAGENTA, is_bold
-        if g > 100 and b > 100 and r < 100: return curses.COLOR_CYAN, is_bold
-        
-        if r < 100 and g < 100 and b < 100: return curses.COLOR_BLACK, is_bold # Dark Grey
+        is_bold = m > 160 
+
+        # find nearest standard color
+        # Grayscale checks
+        if r < 50 and g < 50 and b < 50: return curses.COLOR_BLACK, False
+        if r > 150 and g > 150 and b > 150: return curses.COLOR_WHITE, is_bold
+        if abs(r-g) < 30 and abs(g-b) < 30 and abs(r-b) < 30: 
+            # Greyish, map to black(bold) or white(dim) depending on intensity
+            return curses.COLOR_BLACK if m < 128 else curses.COLOR_WHITE, True
+
+        # Colour dominance
+        if r > g and r > b:
+            if g > r * 0.6: return curses.COLOR_YELLOW, is_bold
+            if b > r * 0.6: return curses.COLOR_MAGENTA, is_bold
+            return curses.COLOR_RED, is_bold
+            
+        if g > r and g > b:
+            if r > g * 0.6: return curses.COLOR_YELLOW, is_bold
+            if b > g * 0.6: return curses.COLOR_CYAN, is_bold
+            return curses.COLOR_GREEN, is_bold
+            
+        if b > r and b > g:
+            if r > b * 0.6: return curses.COLOR_MAGENTA, is_bold
+            if g > b * 0.6: return curses.COLOR_CYAN, is_bold
+            return curses.COLOR_BLUE, is_bold
         
         return curses.COLOR_WHITE, is_bold
 
@@ -63,26 +75,45 @@ class GameRenderer:
         curses.init_pair(3, curses.COLOR_YELLOW, -1)  # Items
         curses.init_pair(4, curses.COLOR_CYAN, -1)    # Player
         curses.init_pair(5, curses.COLOR_BLACK, curses.COLOR_WHITE) # UI Highlight
+        curses.init_pair(11, curses.COLOR_WHITE, -1)  # Inventory Text
+        curses.init_pair(12, curses.COLOR_YELLOW, -1) # Selection
+        curses.init_pair(13, curses.COLOR_RED, -1)    # Creature default
 
         # Dynamic terrain colors (IDs 10+)
         # Need to map the JSON definition to Curses pairs.
         # Since JSON has hex/names, using a simplified mapping for this.
         
-        pair_id = 10
+        pair_id = 20
         for t_def in self.terrain_config:
             char = t_def['char']
-            
-            # 'symbol' from config if available, else 'char'
             symbol = t_def.get('symbol', char)
-            if not symbol: symbol = char # Fallback if symbol is empty string
+            if not symbol: 
+                symbol = char
+
+            # Fix for TypError ensuring symbol is exactly 1 char long for addch
+            if len(symbol) > 1:
+                symbol = symbol[0]
+
+            fg_hex = t_def.get('color', '#FFFFFF') 
+            bg_hex = t_def.get('fg', None) 
             
-            hex_color = t_def.get('color', '#FFFFFF')
-            c_const, is_bold = self._hex_to_curses_color(hex_color)
+            # Resolve curses colors
+            fg_const, fg_bold = self._hex_to_curses_color(fg_hex)
             
-            curses.init_pair(pair_id, c_const, -1)
+            bg_const = -1
+            if bg_hex:
+                 # Backgrounds in standard curses (init_pair) cannot be bold, 
+                 # so we ignore the bold return value for BG
+                bg_const, _ = self._hex_to_curses_color(bg_hex)
+
+            try:
+                curses.init_pair(pair_id, fg_const, bg_const)
+            except Exception:
+                # Fallback if too many pairs or error
+                pass
             
             attr = curses.color_pair(pair_id)
-            if is_bold:
+            if fg_bold:
                 attr = attr | curses.A_BOLD
 
             self.char_map[char] = (symbol, attr)
@@ -185,7 +216,7 @@ class GameRenderer:
             pos = self.world_to_screen(item.x, item.y)
             if pos:
                 try:
-                    self.stdscr.addch(pos[1], pos[0], item.icon, curses.A_BOLD)
+                    self.stdscr.addch(pos[1], pos[0], item.icon, curses.color_pair(3) | curses.A_BOLD)
                 except curses.error as e:
                     print(e)
 

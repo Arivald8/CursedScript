@@ -34,7 +34,6 @@ def game_loop(stdscr, game_folder_name):
         time.sleep(3)
         return
 
-
     try:
         loader = GameLoader(game_path)
     except Exception as e:
@@ -44,6 +43,7 @@ def game_loop(stdscr, game_folder_name):
         return
 
     map_file = "level1.json"
+
     try:
         w, h, terrain, entities = loader.load_map(map_file)
     except FileNotFoundError:
@@ -69,6 +69,8 @@ def game_loop(stdscr, game_folder_name):
     
     terrain_config = loader.config.get("terrain", [])
     renderer = GameRenderer(stdscr, terrain_config)
+
+    renderer.init_colors()
     
     input_handler = InputHandler()
     
