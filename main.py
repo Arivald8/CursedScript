@@ -168,20 +168,19 @@ class RPGConfiguratorApp(tk.Tk):
         """
         Instantiates all page classes and places them in the content area grid.
         """
-        # Core conf
-        core_page = CoreConfigView(self.content_area, self.project_state)
-        self.pages["core"] = core_page
-        core_page.grid(row=0, column=0, sticky="nsew")
+        # "id": (ClassReference, {kwargs_dictionary})
+        page_definitions = {
+            "core": (CoreConfigView, {"project_state": self.project_state}),
+            "theme": (ThemeEditor, {}),
+            "map": (MapEditorView, {}),
+        }
 
-        # Map editor
-        map_page = MapEditorView(self.content_area)
-        self.pages["map"] = map_page
-        map_page.grid(row=0, column=0, sticky="nsew")
-
-        # Theme editor
-        theme_page = ThemeEditor(self.content_area)
-        self.pages["theme"] = theme_page
-        theme_page.grid(row=0, column=0, sticky="nsew")
+        for pid, (cls, kwargs) in page_definitions.items():
+            # Instantiate the page with content_area as parent, plus specific args
+            page = cls(self.content_area, **kwargs)
+            self.pages[pid] = page
+            # Grid them all
+            page.grid(row=0, column=0, sticky="nsew")
 
         self.content_area.grid_rowconfigure(0, weight=1)
         self.content_area.grid_columnconfigure(0, weight=1)
@@ -264,15 +263,16 @@ class RPGConfiguratorApp(tk.Tk):
             messagebox.showerror("Error", f"Failed to save config.json: {e}")
             return
 
-        # 4. Save Map (Assuming Controller has save functionality)
-        # Note: In a real integration, we would ask the MapController for the data 
-        # and save it to `maps/level1.json`.
-        # Since I cannot modify controller.py, we will simulate a default map if it doesn't exist,
-        # or rely on the Map Editor's internal save if it has one.
-        # Ideally, we would do:
-        # map_data = self.pages["map"].map_controller.get_export_data()
-        # with open(os.path.join(maps_path, "level1.json"), ...) as f: ...
-        
+        try:
+            map_view = self.pages["map"]
+            map_model = map_view.map_controller.model
+            map_file = os.path.join(maps_path, "level1.json")
+
+            map_model.save_to_disk(map_file)
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to save map file: {e}")
+            return
+
         messagebox.showinfo("Success", f"Project saved successfully!\nLocation: {base_path}")
 
 
