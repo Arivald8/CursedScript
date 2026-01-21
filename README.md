@@ -3,20 +3,46 @@
 #### !README will be updated as the project progresses!
 
 Will allow easy creation of terminal based games (when ready!).
+________________
 
-Pivoted to a Model-View-Controller architecture to ensure scalability and maintainability:
+**Change log**:
 
-* **Model**: To handle data integrity, algos, and file persistence. Operates independently of the graphical interface, which will hopefully help in the future with automated testing.
-* **View**: To manage the graphical ui. Implements object pooling rendering for the grid canvas. Rather than destroying and recreating objects during updates, the view recycles existing canvas elements, ensuring O(1) rendering performance and responsiveness even with large map dimensions.
-* **Controller**: To orchestrate the comms between the Model and View, handling user input events and app state.
+Restructured CursedScript toolset to support a unified project workflow, moving away from standalone map files to a structured project system.
 
-Terrain types, visual assets and game entities are defined in external JSON files, allowing anyone to modify the game's palette and object definitions without having to alter the source.
+* Project workflow: 
 
-The file I/O system uses a 'safe save' pattern. Data is written to a temporary buffer and synced to the physical disk before being swapped with the existing file. This is for the risk of data corruption during write failures.
+    The application now enforces a strict folder structure (games/ProjectName/). All assets, configurations, and maps for a specific game are contained within this directory. This replaces the previous ad-hoc file saving system.
 
-Editor tools for now only feature a brush and a bucket fill (flood fill), as well as entity placement layers with tabs, but will be expanded significantly. 
+* Startup & project control: 
 
-Dependencies: 
+    The editor now features a startup dialog prompting users to create a new project or open an existing one. Loading a project automatically populates the core configuration, theme data, and map layers from the project's source of truth (config.json).
+
+* Save logic: 
+
+    The explicit "Save As" dialogs have been replaced with a smart "Save Project" system. The Main Controller dynamically calculates file paths based on the Project Title. Saving the project writes config.json (metadata + theme) and level1.json (map data) directly to their correct locations without user intervention.
+
+* Theme Editor Tool: 
+
+    A new MVC-based ThemeEditor has been integrated. This allows users to:
+
+    * Define custom ASCII characters, symbols, and colors.
+
+    * Visualize tile appearance in real-time.
+
+    * Select from a small catalog of preset roguelike entities and terrain types.
+
+    * Persist these definitions into the project's config.json.
+
+* Rendering Fixes: 
+
+    Addressed encoding issues (UTF-8 artifacts) in the Windows Curses environment and corrected colour mapping logic to properly support both foreground and background attributes in standard terminals.
+
+* Unified Map Converter: 
+
+    A new map_converter.py tool has been added to convert image files (PNG) into the new JSON map format, preserving both terrain classifications and entity placements. This comes from a previous project "nitem". 
+____________
+
+### Dependencies: 
 * windows-curses 
 * pytest
 * pytest-mock
@@ -29,39 +55,44 @@ __________________
 ```
 CursedScript/
 ├── engine
+│   ├── world
+│   │   ├── __init__.py
+│   │   ├── map.py
+│   │   └── objects.py
+│   ├── core.py
+│   ├── input.py
+│   ├── loader.py
+│   ├── renderer.py
+│   └── state.py
 ├── games
 │   └── sample_quest
 │       ├── assets
 │       ├── maps
-│       │   ├── map_file.txt
-│       │   ├── map_file_data.json
-│       │   ├── test_map_file.txt
-│       │   └── test_map_file_data.json
+│       │   ├── level1.json
+│       │   └── level1old.json
 │       ├── scripts
 │       └── config.json
 ├── tools
-│   └── editor
-│       ├── cfg.py
-│       ├── config.json
-│       ├── controller.py
-│       ├── model.py
-│       └── view.py
+│   ├── converter
+│   │   ├── level1.json
+│   │   ├── map_converter.py
+│   │   └── map_template.png
+│   ├── editor
+│   │   ├── cfg.py
+│   │   ├── config.json
+│   │   ├── controller.py
+│   │   ├── model.py
+│   │   └── view.py
+│   └── theme
+│       ├── __init__.py
+│       └── theme_creator.py
 ├── .gitignore
 ├── LICENSE
 ├── main.py
 ├── README.md
+├── run_game.py
 └── test_editor.py
 ```
-
-## Editor/Configurator
-
-Editor is using a vertical navigation sidebar with the main content changing on the right. 
-
-For the moment, includes **CoreConfigView** and **MapEditorView**.
-
-* **CoreConfigView** allows to set the game metadate, as well as resolution settings and colour palette.
-
-* **MapEditorView** exposes the tile system, map layers, region definitions and spawn points. 
 
 ## Testing Strategy
 
@@ -121,8 +152,20 @@ test_editor.py
 === 6 passed in 0.55s ===
 ```
 
+## Source Overview:
 
+Overview of the different source files can be found below (This will be a continuous TBD/TODO)
 
+### Editor/Configurator
 
+Main Editor (main.py) is using a vertical navigation sidebar with the main content changing on the right. 
+
+For the moment, includes **CoreConfigView** and **MapEditorView** and **ThemeEditor**.
+
+* **CoreConfigView** allows to set the game metadate, as well as resolution settings and colour palette.
+
+* **MapEditorView** exposes the tile system, map layers, region definitions and spawn points. 
+
+* **ThemeEditor** Allows to create a unique ASCII theme and background/foreground colors. 
 
 
