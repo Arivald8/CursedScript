@@ -27,6 +27,12 @@ class CFG:
             if t['char'] == char:
                 return t
         return CFG.TERRAIN_TYPES[0]
+    
+
+    @classmethod
+    def update_terrain_data(cls, new_terrain_list):
+        """Allows runtime updates of terrain definitions."""
+        cls.TERRAIN_TYPES = new_terrain_list
 
 
     @classmethod

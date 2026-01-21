@@ -56,7 +56,12 @@ class RPGConfiguratorApp(tk.Tk):
 
     def init_pages(self):
         self.pages["core"] = CoreConfigView(self.content_area, project_state=self.model.get_state_dict())
-        self.pages["theme"] = ThemeEditor(self.content_area)
+        
+        self.pages["theme"] = ThemeEditor(
+            self.content_area,
+            on_theme_change=self.sync_theme_to_map
+        )
+        
         self.pages["map"] = MapEditorView(self.content_area)
 
         for page in self.pages.values():
@@ -69,6 +74,11 @@ class RPGConfiguratorApp(tk.Tk):
         self.nav_tree.insert("", "end", iid="core", text="  Core Configuration")
         self.nav_tree.insert("", "end", iid="theme", text="  Theme/Palette")
         self.nav_tree.insert("", "end", iid="map", text="  Map Editor")
+
+    def sync_theme_to_map(self, terrain_data):
+        """Bridge function: Theme Editor -> Map Editor"""
+        if "map" in self.pages:
+            self.pages["map"].map_controller.sync_terrain_data(terrain_data)
 
     def on_nav_select(self, event):
         sel = self.nav_tree.selection()
@@ -109,8 +119,12 @@ class RPGConfiguratorApp(tk.Tk):
             if not data.get("metadata", {}).get("title"):
                 self.model.title.set(os.path.basename(folder_path))
 
-            self.pages["theme"].controller.model.set_data(data.get("terrain", []))
+            terrain_data = data.get("terrain", [])
+
+            self.pages["theme"].controller.model.set_data(terrain_data)
             self.pages["theme"].controller.refresh_list()
+
+            self.sync_theme_to_map(terrain_data)
 
             # Handle map
             map_path = os.path.join(folder_path, "maps", "level1.json")
