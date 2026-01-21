@@ -193,7 +193,7 @@ class GameRenderer:
                     logic_char = state.world.map_data[map_y][map_x]
                     char, color = self.get_tile_render_data(logic_char)
                     try:
-                        self.stdscr.addch(y, x, ord(char), color)
+                        self.stdscr.addch(y, x, char, color)
                     except curses.error:
                         pass
 
@@ -216,7 +216,7 @@ class GameRenderer:
             pos = self.world_to_screen(item.x, item.y)
             if pos:
                 try:
-                    self.stdscr.addch(pos[1], pos[0], ord(item.icon), curses.color_pair(3) | curses.A_BOLD)
+                    self.stdscr.addch(pos[1], pos[0], item.icon, curses.color_pair(3) | curses.A_BOLD)
                 except curses.error as e:
                     print(e)
 
@@ -230,7 +230,7 @@ class GameRenderer:
                     if blink_state:
                         continue
                 try:
-                    self.stdscr.addch(pos[1], pos[0], ord(creature.icon), curses.color_pair(13))
+                    self.stdscr.addch(pos[1], pos[0], creature.icon, curses.color_pair(13))
                 except curses.error as e:
                     print(e)
 
