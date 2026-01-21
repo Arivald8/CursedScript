@@ -1,5 +1,6 @@
 import tkinter as tk
 from tkinter import ttk, messagebox, filedialog
+import os
 from .cfg import CFG
 
 class MapView(tk.Frame):
@@ -134,6 +135,16 @@ class MapView(tk.Frame):
             tab = self.notebook.tab(self.notebook.select(), "text")
             self.controller.switch_layer(tab)
 
+    def _get_games_dir(self):
+        """Relative path to games folder from editor location"""
+        # tools/editor/view.py -> ../../games/sample_quest/maps/
+        base = os.path.dirname(os.path.abspath(__file__))
+        target = os.path.join(base, "..", "..", "games", "sample_quest", "maps")
+        if not os.path.exists(target):
+            # Fallback if structure is different
+            return base
+        return target
+
     # Public API for Controller -->
     def get_tool(self):
         return self.tool_var.get()
@@ -142,15 +153,19 @@ class MapView(tk.Frame):
         self.tool_var.set(val)
 
     def ask_filename_save(self):
+        initial = self._get_games_dir()
         return filedialog.asksaveasfilename(
             parent=self, 
+            initialdir=initial,
             defaultextension=".json",
             filetypes=[("Map JSON", "*.json"), ("All Files", "*.*")]
         )
 
     def ask_filename_load(self):
+        initial = self._get_games_dir()
         return filedialog.askopenfilename(
             parent=self, 
+            initialdir=initial,
             filetypes=[("Map JSON", "*.json"), ("All Files", "*.*")]
         )
     
