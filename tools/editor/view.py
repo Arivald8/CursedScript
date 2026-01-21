@@ -169,6 +169,10 @@ class MapView(tk.Frame):
             filetypes=[("Map JSON", "*.json"), ("All Files", "*.*")]
         )
     
+    def ask_yes_no_cancel(self, title, msg):
+        """Returns True(Yes), False(No), or None(Cancel)"""
+        return messagebox.askyesnocancel(title, msg, parent=self)
+    
     def show_info(self, title, msg):
         messagebox.showinfo(title, msg, parent=self)
 
