@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import ttk
 from tools.editor.controller import Controller
-
+from tools.theme.theme_creator import ThemeEditor
 class EditorPage(ttk.Frame):
     """
     Base for all editor pages.
@@ -119,6 +119,7 @@ class RPGConfiguratorApp(tk.Tk):
         page_definitions = {
             "core": CoreConfigView,
             "map": MapEditorView,
+            "theme": ThemeEditor,
         }
 
         for pid, cls in page_definitions.items():
@@ -138,6 +139,7 @@ class RPGConfiguratorApp(tk.Tk):
         nav_items = [
             ("core", "Core Configuration"),
             ("map", "Map Editor"),
+            ("theme", "Theme/Palette")
         ]
 
         for pid, label in nav_items:
