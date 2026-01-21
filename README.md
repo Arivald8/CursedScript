@@ -5,9 +5,24 @@
 Will allow easy creation of terminal based games (when ready!).
 ________________
 
-**Change log**:
+**Recent Change Log**:
+
+Refactored monolithic main.py into a modular, MVC-based package located in tools/configurator/.
+
+* tools/configurator/model.py: Manages reactive project state (Title, Author, Version).
+
+* tools/configurator/view.py: Contains UI definitions for Core Config and Editor wrappers.
+
+* tools/configurator/app.py: Acts as the central controller orchestrating UI events and logic.
 
 Restructured CursedScript toolset to support a unified project workflow, moving away from standalone map files to a structured project system.
+
+Extracted file system operations and JSON serialization into tools/configurator/storage.py to decouple business logic from UI code.
+
+Reduced main.py to a minimal bootstrap script responsible only for determining the project root path and launching the application.
+___________________________
+
+Previous changes:
 
 * Project workflow: 
 
@@ -73,6 +88,12 @@ CursedScript/
 │       ├── scripts
 │       └── config.json
 ├── tools
+│   ├── configurator
+│   │   ├── __init__.py
+│   │   ├── app.py
+│   │   ├── model.py
+│   │   ├── storage.py
+│   │   └── view.py
 │   ├── converter
 │   │   ├── level1.json
 │   │   ├── map_converter.py
