@@ -1,3 +1,20 @@
+"""
+Just a convenience tool to allow for creative map design.
+Converts any PNG image to JSON map format for CursedScript.
+
+Transforms pixels into ASCII-based terrain representations with
+colour classification, preserving both terrain layout and entity placements. 
+
+Also supports legacy entity migration from previous JSON files while 
+generating new unified map files compatible with the current engine.
+
+:
+    Color-to-ASCII classification using HSV color space analysis
+    Aspect ratio correction for terminal character proportions (0.55 height multiplier)
+    Legacy entity preservation and migration
+    Configurable output dimensions and target width
+"""
+
 import json
 import os
 import colorsys
@@ -5,18 +22,19 @@ from PIL import Image
 
 INPUT_IMAGE_PATH: str = 'map_template.png' 
 
-# Optionally the old JSON file containing entities.
-# Set to None if not needed.
+# Optionally can accept an old JSON file containing entities.
+# This has been superseeded by new JSON file saves, but left 
+# here for backward compatibility. Set to None if not needed.
 INPUT_ENTITIES_JSON: str | None = None
 
-# The name of the file to generate for the new engine
+# The name of the file to generate for the new engine implementation
 OUTPUT_JSON_PATH: str = 'level1.json'
 
-# How wide the map should be (Height is calculated automatically)
+# How wide the map SHOULD be (Height is calculated automatically)
 TARGET_WIDTH = 100
 
 # ==========================================
-# COLOR MAPPING GUIDE (Paint your PNG with these rough colors):
+# COLOR MAPPING GUIDE:
 # ------------------------------------------
 # BLACK        -> ' ' (Void)
 # DARK GREY    -> 'M' (Cave/Rock)
