@@ -1,12 +1,18 @@
-# Dev note: Was world.py, renamed to avoid confusion
 import copy
-import random
-from .objects import Item, Creature
 
 # temp
 WALKABLE_CHARS = {'.', '#', ':', ' ', '+', 'T', ','}
 
 class World:
+    """
+    Container for all game world data, handling:
+        Terrain map storage and access with bounds checking
+        Entity handling for both items and creatures with coordinate tracking
+        World population from JSON data using template-based entity instantiation
+
+    Maintains two parallel tracking systems: list-based storage for iteration
+    and dictionary-based coordinate mapping for O(1) spatial queries.
+    """
     def __init__(self, width, height, terrain_data):
         self.width = width
         self.height = height

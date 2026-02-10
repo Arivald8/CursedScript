@@ -1,7 +1,7 @@
-# Dev note: Merged entities (creature, item player)
-import copy
-
 class Entity:
+    """
+    Base class for all game objects with position, visual representation, and name.
+    """
     def __init__(self, x=0, y=0, name="Unknown", icon="?", color_pair=0, **kwargs):
         self.x = x
         self.y = y
@@ -11,6 +11,9 @@ class Entity:
 
 
 class Item(Entity):
+    """
+    Extends Entity, representing collectible objects with combat stats and equipment slots.
+    """
     def __init__(self, name, type, icon, attack=0, slot_type=None, **kwargs):
         super().__init__(name=name, icon=icon, **kwargs)
         self.type = type
@@ -23,6 +26,9 @@ class Item(Entity):
 
 
 class Creature(Entity):
+    """
+    Extends Entity, representing living entities with health, combat stats, and behaviours.
+    """
     def __init__(self,
             name, 
             hp, 
@@ -62,6 +68,9 @@ class Creature(Entity):
 
 
 class Equipment:
+    """
+    Manages equipped items across eight gear slots with swap/unequip functionality.
+    """
     def __init__(self):
         self.slots = {
             "head": None,
@@ -94,6 +103,9 @@ class Equipment:
 
 
 class Inventory:
+    """
+    Container for items with limited capacity and UI representation generation.
+    """
     def __init__(self, name):
         self.name = name
         self.storage = []
@@ -127,6 +139,9 @@ class Inventory:
         
 
 class Player(Creature):
+    """
+    Extends Creature, representing the player character with level progression, inventory, and equipment systems.
+    """
     experience_dict = {
         0: 1,
         100: 2,
