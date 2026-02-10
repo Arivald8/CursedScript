@@ -1,5 +1,3 @@
-from .world.objects import Inventory
-
 class GameState:
     def __init__(self, world_obj, player_obj):
         self.world = world_obj

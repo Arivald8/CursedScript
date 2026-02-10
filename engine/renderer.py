@@ -1,7 +1,23 @@
-# Dev note: Was engine/renderer.py
 import curses
 
 class GameRenderer:
+    """
+    Main renderer handling terminal display of game elements.
+
+    Manages all curses-based rendering operations for terminal game config. 
+    
+    It handles:
+    - Terrain rendering with configurable ASCII symbols and colors
+    - Camera/viewport management for scrolling worlds
+    - Entity and object rendering (player, items, creatures)
+    - UI components (inventory, stats, controls)
+    - Colour palette initialization from hex/RGB values
+
+    The renderer uses a config-driven approach where terrain appearance is defined
+    in JSON configuration files, allowing for theme customization.
+    """
+
+
     def __init__(self, stdscr, terrain_config=None):
         self.stdscr = stdscr
         self.sh, self.sw = stdscr.getmaxyx()

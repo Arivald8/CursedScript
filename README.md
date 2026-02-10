@@ -1,8 +1,14 @@
 # CursedScript
 ## Curses-Powered Engine for Terminal Based Games
-#### !README will be updated as the project progresses!
 
-Will allow easy creation of terminal based games (when ready!).
+
+A terminal-based game development environment for creating ASCII and roguelike games. Powered with curses, and comes with a suite of editor tools.
+
+Current features include a fully functional map with terrain and entity painting, a theme editor for custom ASCII symbols and colors, and a map converter that transforms PNG images into the engine's JSON format.
+
+The core engine handles map rendering, entity management, and game state, while the accompanying tools offer project configuration, map editing, and theme creation. The system enforces a structured project workflow where all game assets, configurations, and maps are organized within dedicated project directories. 
+
+In terms of the game itself, player can move around, pick up and store items in their inventory, as well as equip them. The statistics of items are taken into account when equipped. Player can also fight monster entities.
 ________________
 
 **Recent Change Log**:
@@ -23,10 +29,6 @@ Reduced main.py to a minimal bootstrap script responsible only for determining t
 ___________________________
 
 Previous changes:
-
-* Project workflow: 
-
-    The application now enforces a strict folder structure (games/ProjectName/). All assets, configurations, and maps for a specific game are contained within this directory. This replaces the previous ad-hoc file saving system.
 
 * Startup & project control: 
 
@@ -70,8 +72,6 @@ ____________
 * pytest
 * pytest-mock
 __________________
-### Current State:
-* Map Editor: Fully working (Create new, paint entities, objects, save, load map.)
 
 ## Current Directory Structure
 
@@ -181,20 +181,5 @@ test_editor.py
 === 6 passed in 0.55s ===
 ```
 
-## Source Overview:
-
-Overview of the different source files can be found below (This will be a continuous TBD/TODO)
-
-### Editor/Configurator
-
-Main Editor (main.py) is using a vertical navigation sidebar with the main content changing on the right. 
-
-For the moment, includes **CoreConfigView** and **MapEditorView** and **ThemeEditor**.
-
-* **CoreConfigView** allows to set the game metadate, as well as resolution settings and colour palette.
-
-* **MapEditorView** exposes the tile system, map layers, region definitions and spawn points. 
-
-* **ThemeEditor** Allows to create a unique ASCII theme and background/foreground colors. 
 
 
