@@ -1,5 +1,6 @@
 # CursedScript
-## Curses-Powered Engine for Terminal Based Games
+## Curses-Powered Dev Kit for Terminal Based Games
+#### !README will be updated as the project progresses!
 
 
 A terminal-based game development environment for creating ASCII and roguelike games. Powered with curses, and comes with a suite of editor tools.
