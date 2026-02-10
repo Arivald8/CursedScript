@@ -13,6 +13,10 @@ generating new unified map files compatible with the current engine.
     Aspect ratio correction for terminal character proportions (0.55 height multiplier)
     Legacy entity preservation and migration
     Configurable output dimensions and target width
+
+Usage:
+    Run directly to convert map_template.png to level1.json with default settings.
+    Modify constants at the top of the file to customize input/output paths and dimensions.
 """
 
 import json
