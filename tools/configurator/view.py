@@ -41,7 +41,7 @@ class EditorPage(ttk.Frame):
 
 class CoreConfigView(ttk.Frame):
     """
-    Specific View for editing Project Metadata.
+    Specific view for editing project metadata.
     """
     def __init__(self, parent, project_state):
         super().__init__(parent)
@@ -88,5 +88,4 @@ class MapEditorView(ttk.Frame):
     """
     def __init__(self, parent):
         super().__init__(parent)
-        # Initializes the existing Controller from tools/editor/controller.py
         self.map_controller = MapController(self)
