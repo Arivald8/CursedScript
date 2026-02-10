@@ -1,13 +1,11 @@
 # CursedScript
 ## Curses-Powered Dev Kit for Terminal Based Games
-#### !README will be updated as the project progresses!
-
 
 A terminal-based game development environment for creating ASCII and roguelike games. Powered with curses, and comes with a suite of editor tools.
 
-Current features include a fully functional map with terrain and entity painting, a theme editor for custom ASCII symbols and colors, and a map converter that transforms PNG images into the engine's JSON format.
+Currently includes a fully functional map editor with terrain and entity painting, a theme editor for custom ASCII symbols and colors, and a map converter that transforms PNG images into the engine's JSON format.
 
-The core engine handles map rendering, entity management, and game state, while the accompanying tools offer project configuration, map editing, and theme creation. The system enforces a structured project workflow where all game assets, configurations, and maps are organized within dedicated project directories. 
+Core engine handles map rendering, entity management, and game state, while the accompanying tools offer project configs, map editing, and theme creation. The system enforces a structured project workflow where all game assets, configurations, and maps are organized within dedicated project directories. 
 
 In terms of the game itself, player can move around, pick up and store items in their inventory, as well as equip them. The statistics of items are taken into account when equipped. Player can also fight monster entities.
 ________________
