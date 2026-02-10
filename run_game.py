@@ -1,3 +1,25 @@
+"""
+Game runtime bootstrap - Entry point for executing CursedScript games.
+
+Serves as the game runner that inits the curses environment,
+loads game data, and executes the main game loop. 
+
+Coordinates all engine components (loader, world, renderer, input handler) into 
+a cohesive runtime system with frame-rate controlled updates.
+
+Handles:
+    Curses terminal init and config
+    Game data loading from project folder structure
+    Player spawn point resolution from entity data
+    Core game loop with input processing and rendering
+    Error handling for missing game assets and malformed data
+    Frame timing to maintain consistent update rate
+
+Usage:
+    python run_game.py <game_folder_name>
+    Example: python run_game.py sample_quest
+"""
+
 import curses
 import sys
 import os
