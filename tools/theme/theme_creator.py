@@ -1,8 +1,16 @@
 import tkinter as tk
 from tkinter import ttk, colorchooser, messagebox
 
-
 class ThemeModel:
+    """
+    Data model for terrain theme definitions, handling storage and manipulation.
+    
+    Each definition includes character mapping, display symbols, colour codes, 
+    and descriptive names. 
+    
+    Provides CRUD operations for terrain entries and maintains the authoritative 
+    data source for theme configs.
+    """
     def __init__(self):
         self.terrains = []
 
@@ -41,6 +49,15 @@ class ThemeModel:
 
 
 class ThemeView(ttk.Frame):
+    """
+    Tkinter-based UI component for the editor with split-pane layout:
+        left-side terrain list (Treeview) and a right-side property editor. 
+        
+    Includes color pickers, text inputs for char/symbol definitions, and a live preview panel. 
+    
+    The view handles all visual rendering and user interaction widgets. Is decoupled fromb usiness logic.
+    """
+
     def __init__(self, parent):
         super().__init__(parent)
         
@@ -144,6 +161,15 @@ class ThemeView(ttk.Frame):
 
 
 class ThemeController:
+    """
+    Controller coordinating ThemeModel and ThemeView, handling user interaction.
+    
+    Binds UI events to model operations, manages the default terrain
+    catalogue, and coordinates data flow between components. 
+    
+    Also handles terrain selection, creation, updating, deletion, and color picking operations,
+    providing callback integration for theme updates to external systems.
+    """
     def __init__(self, model, view, on_update_callback=None):
         self.model = model
         self.view = view

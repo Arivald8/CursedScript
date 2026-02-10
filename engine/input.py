@@ -2,6 +2,26 @@ import curses
 from .world.map import WALKABLE_CHARS
 
 class InputHandler:
+    """
+    Implements dual-mode input processing where input behaviour changes based on the current game context.
+    
+    Two modes for the context are:
+
+        :gameplay mode (exploration/combat).
+        :inventory mode (item and inventory management). 
+
+    Exposes public handle_input method for all player actions.
+    
+    The rest are all private handlers for:
+        Inventory toggle
+        Inventory mode navigation
+        Equipping, unequipping, dropping and destroying items
+        Gameplay toggle
+        Player movement
+        Item pickup
+        Player attack
+    """
+
     # Mapping inventory indices to equipment slot names
     # Index 0-4 are the "Small Sack" (Inventory)
     # Index 5-12 are Equipment slots
@@ -216,7 +236,6 @@ class InputHandler:
         if not state.world.is_valid(target_x, target_y):
             return
 
-        # WALKABLE_CHARS is imported from engine.world.map
         if state.world.get_tile(target_x, target_y) in WALKABLE_CHARS:
             state.player_x = target_x
             state.player_y = target_y

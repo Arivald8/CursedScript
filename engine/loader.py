@@ -1,10 +1,13 @@
-# Dev note: New loader not present in nitem
-
 import json
 import os
 from .world.objects import Item, Creature
 
 class GameLoader:
+    """
+    Exposes public methods responsible for loading any state,
+    including config, template parse, and map.
+    """
+
     def __init__(self, game_dir):
         self.game_dir = game_dir
         self.config = self.load_config()

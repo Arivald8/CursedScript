@@ -4,6 +4,25 @@ from collections import deque
 from .cfg import CFG
 
 class MapModel:
+    """
+    Data layer for the map editor, handling terrain and entity storage.
+
+    Represents the underlying data structure for game maps:
+        2D terrain grid storage and manipulation
+        Entity placement dictionary with coordinate-based lookup
+        Flood fill (bucket tool) algo implementation
+        JSON serialisation/deserialisation for map persistence
+
+    Also implements atomic file operations with temp-file swapping to prevent
+    corruption during saves. Validates map dimensions, maintains consistency between
+    terrain and entity layers, and provides spatial query methods.
+
+    Key algo:
+        Breadth-first flood fill for bucket tool with boundary checking
+        Entity ID resolution against CFG definitions during loading
+        Auto dimension adjustment for malformed or truncated map data
+    """
+
     def __init__(self, width=CFG.DEFAULT_WIDTH, height=CFG.DEFAULT_HEIGHT):
         self.width = width
         self.height = height
@@ -17,17 +36,12 @@ class MapModel:
         self.entity_data = {}
 
     def resize(self, w, h):
+        """Resets upon resize."""
         self.width = w
         self.height = h
         self.reset_map()
 
     # Data modification -->
-    def set_terrain(self, x, y, char):
-        if 0 <= x < self.width and 0 <= y < self.height:
-            self.map_data[y][x] = char
-            return True
-        return False
-    
     def set_terrain(self, x, y, char):
         if 0 <= x < self.width and 0 <= y < self.height:
             self.map_data[y][x] = char
@@ -52,11 +66,10 @@ class MapModel:
         return False
     # <-- Data modification
     
-    # Algo -->
     def bucket_fill(self, start_x, start_y, fill_char):
         """
         Performs flood fill.
-        Returns: List of (x, y) tuples that were changes.
+        Returns: List of (x, y) tuples that were changed.
         """
         target_char = self.get_terrain(start_x, start_y)
         if target_char == fill_char or target_char is None:
@@ -84,7 +97,6 @@ class MapModel:
                     queue.append((cx, cy - 1))
         
         return changed_cells
-    # <-- Algo
 
     # I/O -->
     def save_to_disk(self, filename):
@@ -92,7 +104,7 @@ class MapModel:
         Saves map and entities to a single JSON file.
         Uses the 'safe save' pattern (write temp --> flush --> rename)
         """
-        # Data packet prep - flatted into a list for JSON storage
+        # Data packet prep - flattenedd into a list for JSON storage
         entities_export = [
             {"x": k[0], "y": k[1], "id": v['id']} 
             for k, v in self.entity_data.items()
@@ -137,11 +149,9 @@ class MapModel:
         if "dimensions" not in data or "terrain" not in data:
             raise ValueError("Invalid map file format")
 
-        # Load dimenions
         self.width = data["dimensions"]["width"]
         self.height = data["dimensions"]["height"]
         
-        # Load terrain
         raw_rows = data["terrain"]
         # Converting list of strings back to list of lists
         self.map_data = [list(row.ljust(self.width, '.')) for row in raw_rows]

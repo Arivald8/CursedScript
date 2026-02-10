@@ -1,6 +1,9 @@
-from .world.objects import Inventory
-
 class GameState:
+    """
+    Central repo for the current state, including player position, 
+    inventory status, UI state, and game flow control.
+    """
+
     def __init__(self, world_obj, player_obj):
         self.world = world_obj
         self.player_obj = player_obj

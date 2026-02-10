@@ -4,12 +4,32 @@ import os
 from .cfg import CFG
 
 class MapView(tk.Frame):
+    """
+    Tkinter-based UI layer for the map editor, handling all visual rendering.
+
+    Provides an interface for map editing, including:
+        Scrollable canvas grid for terrain and entity vis
+        Toolbar with file operations, tool selection, and layers
+        Terrain and entity palettes with a dynamic refresh
+        Interactive canvas with click/drag support for painting terran/entities
+
+    View implements object pooling for canvas items to optimise performance during
+    grid resizing. Maintains entity tracking dicts for efficient updates, and
+    provides a public API for controller interaction. Handles all visual feedback, 
+    file dialogs, and user notifications, separated from game logic.
+
+    Key visual:
+        Dynamic terrain sidebar updates when themes change
+        Entity render with multiple shape types (oval, diamond, star)
+        Grid regen only when dimensions change
+        Custom scroll regions with canvas coordinate translation
+    """
+
     def __init__(self, parent, controller):
         super().__init__(parent)
         self.controller = controller
         self.pack(fill=tk.BOTH, expand=True)
-
-        # Rendering State
+        
         # Storing the IDs in a 1D list for rows, containing lists of cells
         self.cell_matrix = []
         self.rows = 0

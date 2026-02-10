@@ -5,7 +5,7 @@ from tkinter import ttk, messagebox, filedialog
 from tools.theme.theme_creator import ThemeEditor
 from tools.configurator.view import CoreConfigView, MapEditorView
 from tools.configurator.model import ProjectModel
-from tools.configurator.storage import ProjectStorage  # <--- New Import
+from tools.configurator.storage import ProjectStorage
 
 class RPGConfiguratorApp(tk.Tk):
     """

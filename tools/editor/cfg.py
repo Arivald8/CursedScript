@@ -1,8 +1,14 @@
 import json
 import os
-import sys
 
 class CFG:
+    """
+    Configuration file specifically for the editor.
+
+    Contains everything from dimentions, through terrain, entities,
+    helper methods and config loading.
+    """
+
     # Fallbacks in case config.json is missing
     DEFAULT_WIDTH = 60
     DEFAULT_HEIGHT = 40

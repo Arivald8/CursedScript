@@ -7,6 +7,25 @@ from .view import MapView
 
 
 class Controller:
+    """
+    MVC controller for the map editing tool.
+
+    Mediates between the MapView (UI) and MapModel (data),
+    handling user interactions, tool selection, and map operations. 
+    
+    It integrates with the main project system for automatic path 
+    management while providing fallback file dialogs for standalone use.
+
+    :
+        User input processing (clicks, drags, tool selection)
+        Terrain and entity placement/erasure logic
+        Bucket fill algorithm coordination
+        Project-aware save/load with fallback
+        Theme data synch from external editors
+
+    Also maintains state for current layer, selected tools, and project integration.
+    """
+
     def __init__(self, root):
         self.root = root
         self.model = MapModel()
