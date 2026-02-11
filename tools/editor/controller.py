@@ -8,22 +8,13 @@ from .view import MapView
 
 class Controller:
     """
-    MVC controller for the map editing tool.
-
     Mediates between the MapView (UI) and MapModel (data),
     handling user interactions, tool selection, and map operations. 
-    
-    It integrates with the main project system for automatic path 
-    management while providing fallback file dialogs for standalone use.
+    Integrates with the main project system for auto path management
+    and provides fallback file dialogs for standalone use.
 
-    :
-        User input processing (clicks, drags, tool selection)
-        Terrain and entity placement/erasure logic
-        Bucket fill algorithm coordination
-        Project-aware save/load with fallback
-        Theme data synch from external editors
-
-    Also maintains state for current layer, selected tools, and project integration.
+    Maintains state for current layer, selected tools, and project integration.
+    Processes clicks, drags, tool selection, entity placement, bucket fill.
     """
 
     def __init__(self, root):
@@ -35,11 +26,11 @@ class Controller:
         self.current_layer = "Terrain" # or "Entities"
         self.selected_terrain = CFG.TERRAIN_TYPES[0]
         self.selected_entity = CFG.ENTITY_TYPES[0]
+        # ---------
 
         # Project integration state
         self.fixed_save_path = None
         
-        # Initial draw
         self._refresh_full_view()
 
     def set_project_path(self, path):
@@ -69,7 +60,6 @@ class Controller:
         row = int(canvas_y // CFG.CELL_SIZE)
         
         if is_right_click:
-            # Right click always erases entity
             self._erase_entity(col, row)
             return
 
@@ -105,16 +95,12 @@ class Controller:
 
     # Logic helpers -->
     def _apply_terrain(self, x, y):
-        # Update model
         changed = self.model.set_terrain(x, y, self.selected_terrain['char'])
-        # Update view
         if changed:
             self.view.update_terrain_at(x, y, self.selected_terrain)
 
     def _apply_bucket(self, x, y):
-        # Model returns list of changed cells
         changes = self.model.bucket_fill(x, y, self.selected_terrain['char'])
-        # View updates only those cells
         for cx, cy in changes:
             self.view.update_terrain_at(cx, cy, self.selected_terrain)
 
@@ -135,12 +121,12 @@ class Controller:
         
     def select_entity(self, e_def):
         self.selected_entity = e_def
-        self.view.notebook.select(1) # Force tab switch
+        self.view.notebook.select(1)
 
 
     def switch_layer(self, layer_name):
         self.current_layer = layer_name
-        # Logic to auto-switch tools (e.g. disable bucket on entities)
+        # Auto-switch tools (e.g. disable bucket on entities)
         if layer_name == "Entities" and self.view.get_tool() == "bucket":
             self.view.set_tool("brush")
 
@@ -193,11 +179,11 @@ class Controller:
                 "Load Map", 
                 "Reload the project's 'level1.json'?\n\nYes = Reload Project Map\nNo = Import External File"
             )
-            if choice is True: # Yes
+            if choice is True:
                 target_file = self.fixed_save_path
-            elif choice is False: # No
+            elif choice is False:
                 target_file = self.view.ask_filename_load()
-            else: # Cancel
+            else:
                 return
         else:
             target_file = self.view.ask_filename_load()
