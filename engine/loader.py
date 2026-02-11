@@ -36,8 +36,6 @@ class GameLoader:
             
             # Map JSON keys to Class __init__ arguments
             # We pass the whole dict as kwargs. 
-            # The Classes use **kwargs to accept extra visual data (like "color") safely.
-            
             if e_type == "creature":
                 # defaults for stats if missing in JSON
                 defaults = {

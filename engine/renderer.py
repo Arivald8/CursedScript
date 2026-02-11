@@ -3,18 +3,14 @@ import curses
 class GameRenderer:
     """
     Main renderer handling terminal display of game elements.
+    Manages all curses-based rendering operations. 
 
-    Manages all curses-based rendering operations for terminal game config. 
-    
-    It handles:
-    - Terrain rendering with configurable ASCII symbols and colors
-    - Camera/viewport management for scrolling worlds
-    - Entity and object rendering (player, items, creatures)
-    - UI components (inventory, stats, controls)
-    - Colour palette initialization from hex/RGB values
+    The renderer uses a config-driven approach where terrain appearance
+    is defined in JSON configuration files, allowing for theme customization.
 
-    The renderer uses a config-driven approach where terrain appearance is defined
-    in JSON configuration files, allowing for theme customization.
+    Terrain rendering with configurable ASCII symbols and colors, 
+    camera/viewport management for scrolling worlds, entity and object 
+    rendering (player, items, creatures), UI components (inventory, stats, controls).
     """
 
 
@@ -32,7 +28,7 @@ class GameRenderer:
 
     def _hex_to_curses_color(self, hex_code):
         """
-        Approximates a HEX string (e.g., '#32CD32') to a curses color constant.
+        Approximates a HEX string (e.g. '#32CD32') to a curses color constant.
         Returns: (curses_color_const, is_bold)
         """
         if not hex_code or not isinstance(hex_code, str):
@@ -106,7 +102,7 @@ class GameRenderer:
             if not symbol: 
                 symbol = char
 
-            # Fix for TypError ensuring symbol is exactly 1 char long for addch
+            # Ensuring symbol is exactly 1 char long for addch
             if len(symbol) > 1:
                 symbol = symbol[0]
 
