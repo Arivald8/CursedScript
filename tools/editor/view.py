@@ -7,22 +7,13 @@ class MapView(tk.Frame):
     """
     Tkinter-based UI layer for the map editor, handling all visual rendering.
 
-    Provides an interface for map editing, including:
-        Scrollable canvas grid for terrain and entity vis
-        Toolbar with file operations, tool selection, and layers
-        Terrain and entity palettes with a dynamic refresh
-        Interactive canvas with click/drag support for painting terran/entities
+    Interface for map editing, scrollable canvas grid, toolbar with file operations,
+    tool selection, layers, terrain and entity palettes with a dynamic refresh.
 
-    View implements object pooling for canvas items to optimise performance during
+    Implements object pooling for canvas items to optimise performance during
     grid resizing. Maintains entity tracking dicts for efficient updates, and
     provides a public API for controller interaction. Handles all visual feedback, 
     file dialogs, and user notifications, separated from game logic.
-
-    Key visual:
-        Dynamic terrain sidebar updates when themes change
-        Entity render with multiple shape types (oval, diamond, star)
-        Grid regen only when dimensions change
-        Custom scroll regions with canvas coordinate translation
     """
 
     def __init__(self, parent, controller):
@@ -45,7 +36,6 @@ class MapView(tk.Frame):
         self._setup_bindings()
 
     def _setup_layout(self):
-        # Toolbar
         self.toolbar = tk.Frame(self, width=250, bg="#e0e0e0", relief=tk.RAISED, bd=1)
         self.toolbar.pack(side=tk.LEFT, fill=tk.Y)
         
@@ -53,7 +43,6 @@ class MapView(tk.Frame):
         self._build_tool_menu()
         self._build_layer_tabs()
 
-        # Canvas area
         self.canvas_frame = tk.Frame(self, bg="gray")
         self.canvas_frame.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True)
 
@@ -114,7 +103,7 @@ class MapView(tk.Frame):
         # Scroll cfg
         self.terrain_frame.bind("<Configure>", lambda e: c_frame.configure(scrollregion=c_frame.bbox("all")))
         
-        # Creating window inside canvas
+        # Window inside canvas
         win_id = c_frame.create_window((0,0), window=self.terrain_frame, anchor="nw")
         
         # and forcing inner_frame to match canvas width (prevents buttons from being too narrow)
