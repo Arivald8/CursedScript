@@ -2,7 +2,7 @@ import os
 import tkinter as tk
 from tkinter import ttk, messagebox, filedialog
 
-from tools.theme.theme_creator import ThemeEditor
+from tools.theme.theme_editor import ThemeEditor
 from tools.configurator.view import CoreConfigView, MapEditorView
 from tools.configurator.model import ProjectModel
 from tools.configurator.storage import ProjectStorage
