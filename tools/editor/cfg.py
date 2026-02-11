@@ -3,9 +3,9 @@ import os
 
 class CFG:
     """
-    Configuration file specifically for the editor.
+    Config file specifically for the editor.
 
-    Contains everything from dimentions, through terrain, entities,
+    Contains everything from dimensions, through terrain, entities,
     helper methods and config loading.
     """
 
@@ -15,18 +15,16 @@ class CFG:
     CELL_SIZE = 20  
     FONT_SIZE = 10
 
-    # Default Terrain Fallback
     TERRAIN_TYPES = [
         {'char': '.', 'color': '#32CD32', 'fg': '#006400', 'name': 'Grass', 'symbol': '·'},
         {'char': ' ', 'color': '#000000', 'fg': '#000000', 'name': 'Void',  'symbol': ''},
     ]
 
-     # Default Entity Fallback
     ENTITY_TYPES = [
         {'type': 'player', 'id': 'player_start', 'name': 'Player Start', 'color': '#FFFFFF', 'shape': 'star'},
     ]
 
-    # Helpers to find data by keys
+
     @staticmethod
     def get_terrain_by_char(char):
         for t in CFG.TERRAIN_TYPES:
