@@ -3,59 +3,11 @@
 
 A terminal-based game development environment for creating ASCII and roguelike games. Powered with curses, and comes with a suite of editor tools.
 
-Currently includes a fully functional map editor with terrain and entity painting, a theme editor for custom ASCII symbols and colors, and a map converter that transforms PNG images into the engine's JSON format.
+Currently includes a fully functional map editor with terrain and entity painting, a theme editor for custom ASCII symbols and colours, and a map converter that transforms PNG images into the engine's JSON format.
 
 Core engine handles map rendering, entity management, and game state, while the accompanying tools offer project configs, map editing, and theme creation. The system enforces a structured project workflow where all game assets, configurations, and maps are organized within dedicated project directories. 
 
 In terms of the game itself, player can move around, pick up and store items in their inventory, as well as equip them. The statistics of items are taken into account when equipped. Player can also fight monster entities.
-________________
-
-**Recent Change Log**:
-
-Refactored monolithic main.py into a modular, MVC-based package located in tools/configurator/.
-
-* tools/configurator/model.py: Manages reactive project state (Title, Author, Version).
-
-* tools/configurator/view.py: Contains UI definitions for Core Config and Editor wrappers.
-
-* tools/configurator/app.py: Acts as the central controller orchestrating UI events and logic.
-
-Restructured CursedScript toolset to support a unified project workflow, moving away from standalone map files to a structured project system.
-
-Extracted file system operations and JSON serialization into tools/configurator/storage.py to decouple business logic from UI code.
-
-Reduced main.py to a minimal bootstrap script responsible only for determining the project root path and launching the application.
-___________________________
-
-Previous changes:
-
-* Startup & project control: 
-
-    The editor now features a startup dialog prompting users to create a new project or open an existing one. Loading a project automatically populates the core configuration, theme data, and map layers from the project's source of truth (config.json).
-
-* Save logic: 
-
-    The explicit "Save As" dialogs have been replaced with a smart "Save Project" system. The Main Controller dynamically calculates file paths based on the Project Title. Saving the project writes config.json (metadata + theme) and level1.json (map data) directly to their correct locations without user intervention.
-
-* Theme Editor Tool: 
-
-    A new MVC-based ThemeEditor has been integrated. This allows users to:
-
-    * Define custom ASCII characters, symbols, and colors.
-
-    * Visualize tile appearance in real-time.
-
-    * Select from a small catalog of preset roguelike entities and terrain types.
-
-    * Persist these definitions into the project's config.json.
-
-* Rendering Fixes: 
-
-    Addressed encoding issues (UTF-8 artifacts) in the Windows Curses environment and corrected colour mapping logic to properly support both foreground and background attributes in standard terminals.
-
-* Unified Map Converter: 
-
-    A new map_converter.py tool has been added to convert image files (PNG) into the new JSON map format, preserving both terrain classifications and entity placements. This comes from a previous project "nitem". 
 ____________
 
 
