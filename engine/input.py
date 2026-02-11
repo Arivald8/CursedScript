@@ -3,23 +3,13 @@ from .world.map import WALKABLE_CHARS
 
 class InputHandler:
     """
-    Implements dual-mode input processing where input behaviour changes based on the current game context.
-    
-    Two modes for the context are:
+    Implements dual-mode input processing where input behaviour 
+    changes based on the current game context.
 
         :gameplay mode (exploration/combat).
         :inventory mode (item and inventory management). 
 
     Exposes public handle_input method for all player actions.
-    
-    The rest are all private handlers for:
-        Inventory toggle
-        Inventory mode navigation
-        Equipping, unequipping, dropping and destroying items
-        Gameplay toggle
-        Player movement
-        Item pickup
-        Player attack
     """
 
     # Mapping inventory indices to equipment slot names
@@ -244,7 +234,6 @@ class InputHandler:
     def _action_pickup(self, state):
         player_pos = (state.player_y, state.player_x)
         
-        # Dictionary lookup (O(1) efficiency)
         item_obj = state.world.item_coordinates.get(player_pos)
 
         if item_obj:
@@ -265,8 +254,6 @@ class InputHandler:
         xp_gained = 0
 
         # Check all creatures within attack range
-        # Note: In a large game, iterating all creatures is slow. 
-        # But for this scope, it is acceptable.
         for unique_id, (pos, creature) in state.world.creature_coordinates.items():
             c_y, c_x = pos
             dist_x = abs(p_x - c_x)

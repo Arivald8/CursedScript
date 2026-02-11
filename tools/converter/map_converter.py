@@ -1,22 +1,19 @@
 """
 Just a convenience tool to allow for creative map design.
-Converts any PNG image to JSON map format for CursedScript.
+Converts any PNG image to JSON map format used in CursedScript.
 
 Transforms pixels into ASCII-based terrain representations with
 colour classification, preserving both terrain layout and entity placements. 
 
 Also supports legacy entity migration from previous JSON files while 
-generating new unified map files compatible with the current engine.
-
-:
-    Color-to-ASCII classification using HSV color space analysis
-    Aspect ratio correction for terminal character proportions (0.55 height multiplier)
-    Legacy entity preservation and migration
-    Configurable output dimensions and target width
+generating new map files compatible with the current engine.
 
 Usage:
+
     Run directly to convert map_template.png to level1.json with default settings.
     Modify constants at the top of the file to customize input/output paths and dimensions.
+
+    python map_converter.py
 """
 
 import json

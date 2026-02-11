@@ -5,22 +5,12 @@ from .cfg import CFG
 
 class MapModel:
     """
-    Data layer for the map editor, handling terrain and entity storage.
+    Data layer for the editor, handling terrain and entity storage.
 
-    Represents the underlying data structure for game maps:
-        2D terrain grid storage and manipulation
-        Entity placement dictionary with coordinate-based lookup
-        Flood fill (bucket tool) algo implementation
-        JSON serialisation/deserialisation for map persistence
-
-    Also implements atomic file operations with temp-file swapping to prevent
-    corruption during saves. Validates map dimensions, maintains consistency between
-    terrain and entity layers, and provides spatial query methods.
-
-    Key algo:
-        Breadth-first flood fill for bucket tool with boundary checking
-        Entity ID resolution against CFG definitions during loading
-        Auto dimension adjustment for malformed or truncated map data
+    2D terrain grid storage, entity placement dictionary with coordinate-based lookup,
+    flood fill (bucket tool), JSON serialisation/deserialisation for map persistence.
+    Also implements atomic file operations with temp-file swapping to prevent corruption
+    during saves. Flood fill uses breadth-first algorithm with boundary checking.
     """
 
     def __init__(self, width=CFG.DEFAULT_WIDTH, height=CFG.DEFAULT_HEIGHT):
@@ -31,7 +21,7 @@ class MapModel:
         self.reset_map()
 
     def reset_map(self):
-        """Creates a blank map."""
+        """Resets by creating a blank map."""
         self.map_data = [['.' for _ in range(self.width)] for _ in range(self.height)]
         self.entity_data = {}
 
@@ -128,7 +118,7 @@ class MapModel:
                 os.fsync(f.fileno())
             
             # Atomic swap
-            # This is atomic on POSIX. On Windows it's atomic in modern Python (os.replace)
+            # This is atomic on POSIX. On Windows it's atomic in modern Python via os.replace
             os.replace(temp_filename, filename)
             
         except Exception as e:
