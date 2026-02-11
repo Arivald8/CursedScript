@@ -31,7 +31,6 @@ class RPGConfiguratorApp(tk.Tk):
         self.main_container = tk.PanedWindow(self, orient=tk.HORIZONTAL, sashrelief=tk.RAISED, sashwidth=4)
         self.main_container.pack(fill="both", expand=True)
 
-        # Sidebar
         self.sidebar_frame = ttk.Frame(self.main_container, width=250)
         self.sidebar_frame.pack_propagate(False) 
         self.main_container.add(self.sidebar_frame)
@@ -45,7 +44,6 @@ class RPGConfiguratorApp(tk.Tk):
         self.btn_save_all = ttk.Button(self.sidebar_frame, text="SAVE PROJECT", command=self.save_project)
         self.btn_save_all.pack(side="bottom", fill="x", padx=10, pady=20)
 
-        # Content
         self.content_area = ttk.Frame(self.main_container)
         self.main_container.add(self.content_area)
 
