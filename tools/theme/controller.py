@@ -4,9 +4,6 @@ class ThemeController:
     """
     Coordinates ThemeModel and ThemeView, handling user interaction.
     
-    Binds UI events to model operations, manages the default terrain
-    catalogue, and coordinates data flow between components. 
-    
     Also handles terrain selection, creation, updating, deletion, and colour picking operations,
     providing callback integration for theme updates to external systems.
     """
