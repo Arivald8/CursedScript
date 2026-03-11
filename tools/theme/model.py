@@ -1,10 +1,6 @@
 class ThemeModel:
     """
     Data model for terrain theme definitions, handling storage and manipulation.
-    
-    Each definition includes character mapping, display symbols, colour codes, 
-    and descriptive names. Provides CRUD operations for terrain entries and 
-    maintains the data source for theme configs.
     """
     def __init__(self):
         self.terrains = []
@@ -39,5 +35,5 @@ class ThemeModel:
             "char": "?",
             "symbol": "?",
             "color": "#FFFFFF", # Text color
-            "fg": "#000000"     # Background color (based on your engine config)
+            "fg": "#000000"     # Background color
         }
