@@ -1,17 +1,7 @@
 """
-Coordinates all engine components (loader, world, renderer, input handler) into 
-a cohesive runtime system with frame-rate controlled updates.
-
-Curses terminal init and config.
-Game data loading from project folder structure.
-Player spawn point resolution from entity data.
-Core loop with input processing and rendering.
-Error handling for missing game assets and malformed data.
-Frame timing to maintain consistent update rate.
-
+Entry point for the game itself.
 Usage:
     python run_game.py <game_folder_name>
-    Example: python run_game.py sample_quest
 """
 
 import curses
