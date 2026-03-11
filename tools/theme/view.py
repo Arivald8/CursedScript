@@ -7,7 +7,7 @@ class ThemeView(ttk.Frame):
     left-side terrain list (Treeview) and a right-side property editor. 
         
     Includes colour pickers, text inputs for char/symbol definitions, and a live preview panel. 
-    Handles all visual rendering and user interaction widgets. Is decoupled from business logic.
+    Handles all visual rendering and user interaction widgets.
     """
 
     def __init__(self, parent):
